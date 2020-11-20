@@ -1,12 +1,11 @@
 import os
-import csv
-
 import librosa
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-
+import pickle
 from sklearn.model_selection import StratifiedShuffleSplit
+import Signal_Analysis.features.signal as sa_signal
 
 def data_split(X,Y):
     xxx = StratifiedShuffleSplit(1, test_size=0.2, random_state=12)
@@ -20,58 +19,49 @@ def data_split(X,Y):
     label_test=label_test.reset_index(drop=True)
     return (df,test,label_test)
 
+def fearture_setting(path, data, index):
+    X, sample_rate = librosa.load('Data/wav/' + data.song_name[index], res_type='kaiser_fast', sr=16000)
+
+    sample_rate = np.array(sample_rate)
+    mfccs = librosa.feature.mfcc(y=X, sr=sample_rate, hop_length=int(0.010*sample_rate), n_fft=512, n_mfcc=13)
+    feature = mfccs.transpose()
+    mfcc_delta=librosa.feature.delta(feature)
+    mfcc_delta2=librosa.feature.delta(feature, order=2)
+    ener = librosa.feature.rms(y=X, frame_length= int(0.025*sample_rate), hop_length = int(0.010* sample_rate))
+    ener=ener.transpose()
+
+    # ZCR
+    zcrs = librosa.feature.zero_crossing_rate(y=X, frame_length= int(0.025*sample_rate), hop_length = int(0.010* sample_rate))
+    zcrs=zcrs.transpose()
+
+    f0, voiced_flag, voiced_probs = librosa.pyin(X, frame_length= int(0.025*sample_rate), hop_length = int(0.010* sample_rate), fmin=librosa.note_to_hz('C2'), fmax=librosa.note_to_hz('C7'))
+    f0[np.isnan(f0)] = 0.0
+    f0 = f0.reshape(len(f0),1)
+
+    hnr = sa_signal.get_HNR(X, sample_rate)
+
+    list_HNR = np.array([hnr for i in range(len(f0))]).reshape(len(f0), 1)
+
+    # print("feature:", feature.shape)
+    # print("mfcc_delta:",mfcc_delta.shape)
+    # print("mfcc_delta2:", mfcc_delta2.shape)
+    # print("ener:",ener.shape)
+    # print("zcrs:",zcrs.shape)
+    # print("zcrs:",zcrs)
+    # print("f0:",f0.shape)
+    
+    # print("f0:",f0)
+    # print("voiced_flag:",voiced_flag.shape)
+    # print("X:", X.shape)
+    
+    feature= np.hstack((feature, mfcc_delta, mfcc_delta2, ener, zcrs, f0, list_HNR))
+    return feature
+
 def feature_extraction(df):
     data = np.asarray(())
-    input_duration=3
     for i in tqdm(range(len(df))):
-        X, sample_rate = librosa.load('Data/wav/' + df.song_name[i], res_type='kaiser_fast',duration=input_duration,sr=16000,offset=0.5)
+        feature = fearture_setting('Data/wav/', df, i)
 
-        sample_rate = np.array(sample_rate)
-        mfccs = librosa.feature.mfcc(y=X, sr=sample_rate, hop_length=int(0.010*sample_rate), n_fft=int(0.020*sample_rate), n_mfcc=13)
-        feature = mfccs.transpose()
-        mfcc_delta=librosa.feature.delta(feature)
-        mfcc_delta2=librosa.feature.delta(feature, order=2)
-        ener = librosa.feature.rms(y=X, frame_length= int(0.020*sample_rate), hop_length = int(0.010* sample_rate))
-        ener=ener.transpose()
-
-        # ZCR
-        zcrs = librosa.feature.zero_crossing_rate(y=X, frame_length= int(0.020*sample_rate), hop_length = int(0.010* sample_rate))
-        zcrs=zcrs.transpose()
-
-        # f0, voiced_flag, voiced_probs = librosa.pyin(X, frame_length= int(0.020*sample_rate), hop_length = int(0.010* sample_rate), fmin=librosa.note_to_hz('C2'), fmax=librosa.note_to_hz('C7'))
-        # f0[np.isnan(f0)] = 0.0
-        # f0 = f0.reshape(len(f0),1)
-        # # F0
-        # d = zcrs.shape[0]
-        # F0 = sa_signal.get_F_0(X, sample_rate)
-
-        # list_f0 = np.zeros((d,0))
-        # for i in range(d):
-        #     list_f0[i] = F0[0]
-        # # print("list_F0:", list_f0.shape)
-        
-        # # HNR
-        # hnr = sa_signal.get_HNR(X, sample_rate)
-        # # print("hnr:", hnr)
-
-        # list_HNR = np.zeros((d,0))
-        # for i in range(d):
-        #     list_HNR[i] = hnr
-        # print("list_HNR:", list_HNR.shape)
-
-        # print("feature:", feature.shape)
-        # print("mfcc_delta:",mfcc_delta.shape)
-        # print("mfcc_delta2:", mfcc_delta2.shape)
-        # print("ener:",ener.shape)
-        # print("zcrs:",zcrs.shape)
-        # print("zcrs:",zcrs)
-        # print("f0:",f0.shape)
-        
-        # print("f0:",f0)
-        # print("voiced_flag:",voiced_flag.shape)
-        # print("X:", X.shape)
-        
-        feature= np.hstack((feature, mfcc_delta, mfcc_delta2, ener, zcrs))
         if data.size==0:
             data = feature
         else:
@@ -161,12 +151,6 @@ def pre_processing():
 
     # print(d_anger)
 
-    with open('Data/test/final_test.csv', 'w', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow(['song_name', 'label'])
-        for i, item in enumerate(test):
-            writer.writerow([item, test_label[i]])
-
     print('Feature Extraction: angry')
     anger = feature_extraction(d_anger)
 
@@ -185,11 +169,37 @@ def pre_processing():
     print('Feature Extraction: sadness')
     sadness = feature_extraction(d_sadness)
 
-    return anger, boredom, disgust, neutral, fear, happiness, sadness, test, test_label
+    with open('./Data/train/anger.pickle', 'wb') as handle:
+        pickle.dump(anger, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    
+    with open('./Data/train/boredom.pickle', 'wb') as handle:
+        pickle.dump(boredom, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    with open('./Data/train/disgust.pickle', 'wb') as handle:
+        pickle.dump(disgust, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    with open('./Data/train/neutral.pickle', 'wb') as handle:
+        pickle.dump(neutral, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    
+    with open('./Data/train/fear.pickle', 'wb') as handle:
+        pickle.dump(fear, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    with open('./Data/train/happiness.pickle', 'wb') as handle:
+        pickle.dump(happiness, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    
+    with open('./Data/train/sadness.pickle', 'wb') as handle:
+        pickle.dump(sadness, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    with open('./Data/train/test.pickle', 'wb') as handle:
+        pickle.dump(test, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    
+    with open('./Data/train/test_label.pickle', 'wb') as handle:
+        pickle.dump(test_label, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    # return anger, boredom, disgust, neutral, fear, happiness, sadness, test, test_label
 
 if __name__ == "__main__":
-    # execute only if run as a script
-    anger, boredom, disgust, neutral, fear, happiness, sadness, test, test_label = pre_processing()
+    pre_processing()
     # print(anger.shape)
     # print(boredom.shape)
     # print(disgust.shape)
