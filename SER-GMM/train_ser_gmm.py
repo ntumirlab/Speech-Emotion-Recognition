@@ -36,7 +36,7 @@ def train_model_hmm(features):
     return (model,labels)
 
 def train_model(features):
-    gmm = GaussianMixture(n_components=64).fit(features)
+    gmm = GaussianMixture(n_components=5).fit(features)
     labels = gmm.predict(features)
     return (gmm,labels)
 
@@ -62,6 +62,7 @@ def training():
     print('Training & save: angry')
     gmm_anger, train_anger_labels = train_model(anger)
     save_model(gmm_anger, "anger_model")
+
     #boredom model
     print('Training & save: boredom')
     gmm_boredom, train_boredom_labels = train_model(boredom)
@@ -100,6 +101,8 @@ def training_hmm():
     print('Training & save: angry')
     gmm_anger, train_anger_labels = train_model_hmm(anger)
     save_model(gmm_anger, "anger_model")
+
+
     #boredom model
     print('Training & save: boredom')
     gmm_boredom, train_boredom_labels = train_model_hmm(boredom)
@@ -137,6 +140,8 @@ def training_gmm_hmm():
 
     print('Training & save: angry')
     gmm_anger, train_anger_labels = train_model_gmm_hmm(anger)
+
+
     save_model(gmm_anger, "anger_model")
     #boredom model
     print('Training & save: boredom')

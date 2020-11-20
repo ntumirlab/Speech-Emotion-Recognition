@@ -19,8 +19,7 @@ def data_split(X,Y):
     label_test=label_test.reset_index(drop=True)
     return (df,test,label_test)
 
-def fearture_setting(path, data, index):
-    X, sample_rate = librosa.load('Data/wav/' + data.song_name[index], res_type='kaiser_fast', sr=16000)
+def fearture_setting(X, sample_rate, data, index):
 
     sample_rate = np.array(sample_rate)
     mfccs = librosa.feature.mfcc(y=X, sr=sample_rate, hop_length=int(0.010*sample_rate), n_fft=512, n_mfcc=13)
@@ -34,33 +33,22 @@ def fearture_setting(path, data, index):
     zcrs = librosa.feature.zero_crossing_rate(y=X, frame_length= int(0.025*sample_rate), hop_length = int(0.010* sample_rate))
     zcrs=zcrs.transpose()
 
-    f0, voiced_flag, voiced_probs = librosa.pyin(X, frame_length= int(0.025*sample_rate), hop_length = int(0.010* sample_rate), fmin=librosa.note_to_hz('C2'), fmax=librosa.note_to_hz('C7'))
-    f0[np.isnan(f0)] = 0.0
-    f0 = f0.reshape(len(f0),1)
+    # f0, voiced_flag, voiced_probs = librosa.pyin(X, frame_length= int(0.025*sample_rate), hop_length = int(0.010* sample_rate), fmin=librosa.note_to_hz('C2'), fmax=librosa.note_to_hz('C7'))
+    # f0[np.isnan(f0)] = 0.0
+    # f0 = f0.reshape(len(f0),1)
 
-    hnr = sa_signal.get_HNR(X, sample_rate)
+    # hnr = sa_signal.get_HNR(X, sample_rate)
 
-    list_HNR = np.array([hnr for i in range(len(f0))]).reshape(len(f0), 1)
-
-    # print("feature:", feature.shape)
-    # print("mfcc_delta:",mfcc_delta.shape)
-    # print("mfcc_delta2:", mfcc_delta2.shape)
-    # print("ener:",ener.shape)
-    # print("zcrs:",zcrs.shape)
-    # print("zcrs:",zcrs)
-    # print("f0:",f0.shape)
+    # list_HNR = np.array([hnr for i in range(len(f0))]).reshape(len(f0), 1)
     
-    # print("f0:",f0)
-    # print("voiced_flag:",voiced_flag.shape)
-    # print("X:", X.shape)
-    
-    feature= np.hstack((feature, mfcc_delta, mfcc_delta2, ener, zcrs, f0, list_HNR))
+    feature= np.hstack((feature, mfcc_delta, mfcc_delta2, ener, zcrs))
     return feature
 
-def feature_extraction(df):
+def feature_extraction_train(df):
     data = np.asarray(())
     for i in tqdm(range(len(df))):
-        feature = fearture_setting('Data/wav/', df, i)
+        X, sample_rate = librosa.load('Data/wav/' + df.song_name[i], res_type='kaiser_fast', sr=16000)
+        feature = fearture_setting(X, sample_rate, df, i)
 
         if data.size==0:
             data = feature
@@ -68,6 +56,16 @@ def feature_extraction(df):
             data = np.vstack((data,feature))
             
     return np.array(data)
+
+def feature_extraction_test(df):
+    feature_list = []
+    for i in tqdm(range(len(df))):
+        X, sample_rate = librosa.load('Data/wav/' + df[i], res_type='kaiser_fast', sr=16000)
+        feature = fearture_setting(X, sample_rate, df, i)
+
+        feature_list.append(feature)
+            
+    return feature_list
 
 def pre_processing():
 
@@ -88,12 +86,6 @@ def pre_processing():
 
     # Dropping the none
     data_df = data_df[data_df.emo_labels != 'none'].reset_index(drop=True)
-
-    # Dropping the none
-    data_df = data_df[data_df.emo_labels != 'none'].reset_index(drop=True)
-
-    print(data_df.emo_labels.value_counts())
-    print('length of data_df:',len(data_df))
 
     # Separating the dataset for different emotion
     df_anger = data_df[data_df.emo_labels == 'anger']
@@ -117,10 +109,14 @@ def pre_processing():
     df_sadness = data_df[data_df.emo_labels == 'sadness']
     df_sadness = df_sadness.reset_index(drop = True)
 
+    #print("df_anger:", df_anger)
+
     # Data Spliting
     X = df_anger["song_name"]
     Y = df_anger["emo_labels"]
     d_anger, anger_test, anger_label_test = data_split(X, Y)
+
+    #print("d_anger:", d_anger)
 
     X = df_boredom["song_name"]
     Y = df_boredom["emo_labels"]
@@ -152,22 +148,25 @@ def pre_processing():
     # print(d_anger)
 
     print('Feature Extraction: angry')
-    anger = feature_extraction(d_anger)
+    anger = feature_extraction_train(d_anger)
 
-    # print(anger)
-    # print(anger.shape)
     print('Feature Extraction: boredom')
-    boredom = feature_extraction(d_boredom)
+    boredom = feature_extraction_train(d_boredom)
     print('Feature Extraction: disgust')
-    disgust = feature_extraction(d_disgust)
+    disgust = feature_extraction_train(d_disgust)
     print('Feature Extraction: neutral')
-    neutral = feature_extraction(d_neutral)
+    neutral = feature_extraction_train(d_neutral)
     print('Feature Extraction: fear')
-    fear = feature_extraction(d_fear)
+    fear = feature_extraction_train(d_fear)
     print('Feature Extraction: happiness')
-    happiness = feature_extraction(d_happiness)
+    happiness = feature_extraction_train(d_happiness)
     print('Feature Extraction: sadness')
-    sadness = feature_extraction(d_sadness)
+    sadness = feature_extraction_train(d_sadness)
+
+    print('Feature Extraction: test')
+    test_feature_list = feature_extraction_test(test)
+    # print("test_feature_list:", len(test_feature_list))
+    # print("test_label:", test_label.shape)
 
     with open('./Data/train/anger.pickle', 'wb') as handle:
         pickle.dump(anger, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -192,6 +191,9 @@ def pre_processing():
 
     with open('./Data/train/test.pickle', 'wb') as handle:
         pickle.dump(test, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    with open('./Data/train/test_feature_list.pickle', 'wb') as handle:
+        pickle.dump(test_feature_list, handle, protocol=pickle.HIGHEST_PROTOCOL)
     
     with open('./Data/train/test_label.pickle', 'wb') as handle:
         pickle.dump(test_label, handle, protocol=pickle.HIGHEST_PROTOCOL)
