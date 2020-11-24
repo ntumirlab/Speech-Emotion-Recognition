@@ -42,7 +42,7 @@ def get_feature_opensmile(config, filepath: str):
     cmd = 'cd ' + config.opensmile_path + ' && ./SMILExtract -C ' + config.opensmile_config + ' -I ' + filepath + ' -O ' + single_feat_path
     print("Opensmile cmd: ", cmd)
     os.system(cmd)
-    
+
     reader = csv.reader(open(single_feat_path,'r'))
     rows = [row for row in reader]
     last_line = rows[-1]
@@ -73,7 +73,7 @@ def load_feature(config, feature_path: str, train: bool):
     scaler_path = os.path.join(config.checkpoint_path, 'SCALER_OPENSMILE.m')
 
     if train == True:
-        # 标准化数据 
+        # 标准化数据
         scaler = StandardScaler().fit(X)
         # 保存标准化模型
         joblib.dump(scaler, scaler_path)
@@ -91,7 +91,7 @@ def load_feature(config, feature_path: str, train: bool):
 
 
 '''
-get_data(): 
+get_data():
     提取所有音频的特征: 遍历所有文件夹, 读取每个文件夹中的音频, 提取每个音频的特征，把所有特征保存在 feature_path 中
 
 输入:
@@ -106,14 +106,14 @@ get_data():
 '''
 def get_data_path(data_path: str, class_labels):
     config = opts.parse_opt()
-    
+
     wav_file_path = []
 
     cur_dir = os.getcwd()
     sys.stderr.write('Curdir: %s\n' % cur_dir)
     os.chdir(data_path)
     if config.dataset == 'RAVDESS':
-        folder = ['Actor_' + ('%.2d' % i) for i in range(1,25)]    
+        folder = ['Actor_' + ('%.2d' % i) for i in range(1,25)]
     elif config.dataset == 'emodb':
         folder = ['wav']
     elif config.dataset == 'NNIME':
@@ -143,6 +143,7 @@ def get_data(config, data_path, feature_path: str, train: bool):
 
     writer = csv.writer(open(feature_path, 'a+'))
     print('Opensmile extracting...')
+
     emodb_label = {'L':'boredom', 'W':'angry', 'E':'disgust', 'A':'fear', 'F':'happy', 'T':'sad', 'N':'neutral'}
     ravdess_label = {'08':'surprise','02':'calm','05':'angry', '07':'disgust', '06':'fear', '03':'happy', '04':'sad', '01':'neutral'}
     if train == True:
@@ -156,12 +157,12 @@ def get_data(config, data_path, feature_path: str, train: bool):
                 _class = ravdess_label[file_label]
             elif config.dataset == 'NNIME':
                 _class = file.split('/')[-1].split('_')[0]
-                
+
             feature_vector = get_feature_opensmile(config, file)
             feature_vector.insert(0, config.class_labels.index(_class))
             # 把每个音频的特征整理到一个 csv 文件中
             writer.writerow(feature_vector)
-    
+
     else:
         feature_vector = get_feature_opensmile(config, data_path)
         feature_vector.insert(0, '-1')

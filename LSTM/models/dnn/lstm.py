@@ -9,10 +9,10 @@ class LSTM(DNN_Model):
     def __init__(self, **params):
         params['name'] = 'LSTM'
         super(LSTM, self).__init__(**params)
-    
+
     def reshape_input(self, data):
-        # 二维数组转三维 
-        # (n_samples, n_feats) -> (n_samples, time_steps = 1, input_size = n_feats) 
+        # 二维数组转三维
+        # (n_samples, n_feats) -> (n_samples, time_steps = 1, input_size = n_feats)
         # time_steps * input_size = n_feats
         data = np.reshape(data, (data.shape[0], 1, data.shape[1]))
         return data
@@ -29,7 +29,7 @@ class LSTM(DNN_Model):
         print(model)
         if model == 'lstm':
             self.model.add(KERAS_LSTM(rnn_size, input_shape=(1, self.input_shape)))
-        elif model == 'blstm': 
+        elif model == 'blstm':
             self.model.add(Bidirectional(KERAS_LSTM(rnn_size, return_sequences=True), input_shape=(1, self.input_shape))) # (time_steps = 1, n_feats)
             self.model.add(Bidirectional(KERAS_LSTM(rnn_size)))
         # self.model.add(Dropout(dropout))

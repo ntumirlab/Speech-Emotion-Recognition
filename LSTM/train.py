@@ -11,13 +11,13 @@ train(): 训练模型
 
 输入:
 	config(Class)
-    
-输出: 
+
+输出:
     model: 训练好的模型
 '''
 def train(config):
     x_train, x_test, y_train, y_test = [], [], [], []
-    
+
     # 加载被 preprocess.py 预处理好的特征
     if(config.feature_method == 'o'):
         x_train, x_test, y_train, y_test = of.load_feature(config, config.train_feature_path_opensmile, train = True)
@@ -25,10 +25,10 @@ def train(config):
     elif(config.feature_method == 'l'):
         x_train, x_test, y_train, y_test = lf.load_feature(config, config.train_feature_path_librosa, train = True)
     print(np.array(x_train).shape, np.array(x_test).shape, np.array(y_train).shape, np.array(y_test).shape)
- 
+
     # x_train, x_test (n_samples, n_feats)
     # y_train, y_test (n_samples)
-    
+
     # 搭建模型
     print(x_train.shape[1])
     model = models.setup(config = config, n_feats = x_train.shape[1])
@@ -40,7 +40,7 @@ def train(config):
         print(np.array(x_train).shape, np.array(x_test).shape, np.array(y_train).shape, np.array(y_test).shape)
         #models/dnn/dnn.py裡面 因為LSTM繼承DNN_Model
         model.train(
-            x_train, y_train, 
+            x_train, y_train,
             batch_size = config.batch_size,
             n_epochs = config.epochs
         )
@@ -52,7 +52,7 @@ def train(config):
     model.evaluate(x_test, y_test)
     # 保存训练好的模型
     model.save_model(config)
-    
+
 
 if __name__ == '__main__':
 

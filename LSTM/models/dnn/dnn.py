@@ -21,16 +21,16 @@ class DNN_Model(Common_Model):
         super(DNN_Model, self).__init__()
 
         self.input_shape = input_shape
-        
+
         self.model = Sequential()
         self.make_model(**params)
         self.model.add(Dense(num_classes, activation = 'softmax'))
-        
+
         optimzer = keras.optimizers.Adam(lr = lr)
         self.model.compile(loss = 'categorical_crossentropy', optimizer = optimzer, metrics = ['accuracy'])
-        
+
         print(self.model.summary(), file = sys.stderr)
-        
+
 
     '''
     save_model(): 将模型存储在 config.checkpoint_path 路径下
@@ -63,16 +63,16 @@ class DNN_Model(Common_Model):
         batch_size(int): 批大小
         n_epochs(int): epoch 数
     '''
-    def train(self, x_train, y_train, 
+    def train(self, x_train, y_train,
                 batch_size = 32, n_epochs = 50):
- 
 
-        
+
+
         x_train = self.reshape_input(x_train)
 
         history = self.model.fit(
-            x_train, y_train, 
-            batch_size = batch_size, 
+            x_train, y_train,
+            batch_size = batch_size,
             epochs = n_epochs,
             shuffle = True, # 每个 epoch 开始前随机排列训练数据
             validation_split=0.1
@@ -87,7 +87,7 @@ class DNN_Model(Common_Model):
 
         plotCurve(acc, val_acc, 'Accuracy', 'acc')
         plotCurve(loss, val_loss, 'Loss', 'loss')
-        
+
         self.trained = True
 
 
@@ -102,7 +102,7 @@ class DNN_Model(Common_Model):
     '''
     def predict(self, sample):
         sample = self.reshape_input(sample)
-        
+
         # 没有训练和加载过模型
         if not self.trained:
             sys.stderr.write("No Model.")

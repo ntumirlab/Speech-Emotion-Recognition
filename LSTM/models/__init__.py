@@ -18,7 +18,7 @@ def setup(config, n_feats):
         model = MLP(model_params = config.params)
     elif config.model == 'lstm' or config.model == 'blstm':
         model = LSTM(
-            input_shape = n_feats, 
+            input_shape = n_feats,
             num_classes = len(config.class_labels),
             lr = config.lr,
             model = config.model,
@@ -28,7 +28,7 @@ def setup(config, n_feats):
         )
     elif config.model == 'cnn1d':
         model = CNN1D(
-            input_shape = n_feats, 
+            input_shape = n_feats,
             num_classes = len(config.class_labels),
             lr = config.lr,
             n_kernels = config.n_kernels,
