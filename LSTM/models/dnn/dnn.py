@@ -28,7 +28,6 @@ class DNN_Model(Common_Model):
 
         optimzer = keras.optimizers.Adam(lr = lr)
         self.model.compile(loss = 'categorical_crossentropy', optimizer = optimzer, metrics = ['accuracy'])
-
         print(self.model.summary(), file = sys.stderr)
 
 

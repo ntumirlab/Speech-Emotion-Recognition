@@ -143,7 +143,6 @@ def get_data(config, data_path, feature_path: str, train: bool):
 
     writer = csv.writer(open(feature_path, 'a+'))
     print('Opensmile extracting...')
-
     emodb_label = {'L':'boredom', 'W':'angry', 'E':'disgust', 'A':'fear', 'F':'happy', 'T':'sad', 'N':'neutral'}
     ravdess_label = {'08':'surprise','02':'calm','05':'angry', '07':'disgust', '06':'fear', '03':'happy', '04':'sad', '01':'neutral'}
     if train == True:
