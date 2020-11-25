@@ -30,11 +30,12 @@ def train(config):
     # y_train, y_test (n_samples)
     
     # 搭建模型
+    print(x_train.shape[1])
     model = models.setup(config = config, n_feats = x_train.shape[1])
 
     # 训练模型
     print('----- start training', config.model, '-----')
-    if config.model in ['lstm', 'cnn1d', 'cnn2d']:
+    if config.model in ['blstm', 'lstm', 'cnn1d', 'cnn2d']:
         y_train, y_val = np_utils.to_categorical(y_train), np_utils.to_categorical(y_test) # 独热编码
         print(np.array(x_train).shape, np.array(x_test).shape, np.array(y_train).shape, np.array(y_test).shape)
         #models/dnn/dnn.py裡面 因為LSTM繼承DNN_Model

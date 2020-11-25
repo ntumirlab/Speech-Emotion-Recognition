@@ -143,20 +143,16 @@ def get_data(config, data_path, feature_path: str, train: bool):
 
     writer = csv.writer(open(feature_path, 'a+'))
     print('Opensmile extracting...')
-    emodb_label = {'W':'angry', 'E':'disgust', 'A':'fear', 'F':'happy', 'T':'sad', 'N':'neutral'}
+    emodb_label = {'L':'boredom', 'W':'angry', 'E':'disgust', 'A':'fear', 'F':'happy', 'T':'sad', 'N':'neutral'}
     ravdess_label = {'08':'surprise','02':'calm','05':'angry', '07':'disgust', '06':'fear', '03':'happy', '04':'sad', '01':'neutral'}
     if train == True:
         files = get_data_path(data_path, config.class_labels)
 
         for file in files:
             if config.dataset == 'emodb':
-                if file[-6] not in emodb_label:
-                    continue
                 _class = emodb_label[file[-6]]
             elif config.dataset == 'RAVDESS':
                 file_label = file.split('/')[-1].split('.')[0].split('-')[2]
-                if file_label not in ravdess_label:
-                    continue
                 _class = ravdess_label[file_label]
             elif config.dataset == 'NNIME':
                 _class = file.split('/')[-1].split('_')[0]

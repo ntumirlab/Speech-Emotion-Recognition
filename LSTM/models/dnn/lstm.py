@@ -1,4 +1,5 @@
 from keras.layers import LSTM as KERAS_LSTM
+from keras.layers import Bidirectional
 from keras.layers import Dense, Dropout
 import numpy as np
 from .dnn import DNN_Model
@@ -24,8 +25,13 @@ class LSTM(DNN_Model):
         hidden_size(int): 全连接层大小
         dropout(float)
     '''
-    def make_model(self, rnn_size, hidden_size, dropout = 0.5, **params):
-        self.model.add(KERAS_LSTM(rnn_size, input_shape=(1, self.input_shape))) # (time_steps = 1, n_feats)
+    def make_model(self,model, rnn_size, hidden_size, dropout = 0.5, **params):
+        print(model)
+        if model == 'lstm':
+            self.model.add(KERAS_LSTM(rnn_size, input_shape=(1, self.input_shape)))
+        elif model == 'blstm': 
+            self.model.add(Bidirectional(KERAS_LSTM(rnn_size, return_sequences=True), input_shape=(1, self.input_shape))) # (time_steps = 1, n_feats)
+            self.model.add(Bidirectional(KERAS_LSTM(rnn_size)))
         # self.model.add(Dropout(dropout))
         # self.model.add(Dense(hidden_size, activation='relu'))
         # self.model.add(Dense(rnn_size, activation='tanh'))
