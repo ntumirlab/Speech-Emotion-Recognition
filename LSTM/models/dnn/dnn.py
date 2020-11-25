@@ -25,12 +25,12 @@ class DNN_Model(Common_Model):
         self.model = Sequential()
         self.make_model(**params)
         self.model.add(Dense(num_classes, activation = 'softmax'))
-
+        
         optimzer = keras.optimizers.Adam(lr = lr)
         self.model.compile(loss = 'categorical_crossentropy', optimizer = optimzer, metrics = ['accuracy'])
-       
+        
         print(self.model.summary(), file = sys.stderr)
-
+        
 
     '''
     save_model(): 将模型存储在 config.checkpoint_path 路径下

@@ -16,11 +16,12 @@ def setup(config, n_feats):
         model = SVM(model_params = config.params)
     elif config.model == 'mlp':
         model = MLP(model_params = config.params)
-    elif config.model == 'lstm':
+    elif config.model == 'lstm' or config.model == 'blstm':
         model = LSTM(
             input_shape = n_feats, 
             num_classes = len(config.class_labels),
             lr = config.lr,
+            model = config.model,
             rnn_size = config.rnn_size,
             hidden_size = config.hidden_size,
             dropout = config.dropout
