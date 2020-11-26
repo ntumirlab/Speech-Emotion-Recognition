@@ -1,18 +1,20 @@
 model: lstm
 
 # 数据集
-dataset: NNIME
-data_path: '/mnt/E/dataset/NNIME/RecordingsofAudio/SentenceLevel/'  # 数据集路径
+dataset: emodb
+data_path: /home/victor/Project/Speech-Emotion-Recognition/SER-GMM/Data/  # 数据集路径
 # class_labels: ["angry", "fear", "happy", "neutral", "sad", "surprise"]  # 情感标签
 # class_labels: ["positive", "negative", "neutral"]
 # class_labels: ["angry", "sad", "neutral", "disgust", "happy", "fear", "surprise", "calm"]
-class_labels: ['angry', 'sad', 'happy', 'frustration', 'neutral', 'surprise']
+# class_labels: ['angry', 'sad', 'happy', 'frustration', 'neutral', 'surprise']
+#### emodb ####
+class_labels: ['angry', 'sad', 'happy', 'disgust', 'neutral', 'fear', 'boredom']
 # 特征存储
 feature_path: features/6-category/  # 特征存储路径
-train_feature_path_opensmile: features/6-category/train_opensmile_NNIME.csv  # 训练特征存储路径（Opensmile）
-predict_feature_path_opensmile: features/6-category/test_opensmile_NNIME.csv  # 预测特征存储路径（Opensmile）
-train_feature_path_librosa: features/6-category/train_librosa_NNIME.p  # 训练特征存储路径（librosa）
-predict_feature_path_librosa: features/6-category/test_librosa_NNIME.p  # 预测特征存储路径（librosa）
+train_feature_path_opensmile: features/6-category/train_opensmile_emodb.csv  # 训练特征存储路径（Opensmile）
+predict_feature_path_opensmile: features/6-category/test_opensmile_emodb.csv  # 预测特征存储路径（Opensmile）
+train_feature_path_librosa: features/6-category/train_librosa_emodb.p  # 训练特征存储路径（librosa）
+predict_feature_path_librosa: features/6-category/test_librosa_emodb.p  # 预测特征存储路径（librosa）
 
 # 特征提取方式
 feature_method: o  # 'o': opensmile, 'l': librosa
@@ -23,7 +25,7 @@ opensmile_config: /home/victor/Project/util/opensmile/config/is09-13/IS10_parali
 # checkpoints
 checkpoint_path: checkpoints/  # checkpoint 存储路径
 #checkpoint_name: LSTM_OPENSMILE_IS10  # checkpoint 文件名
-checkpoint_name: LSTM_OPENSMILE_NNIME
+checkpoint_name: LSTM_OPENSMILE_EMODB
 # 训练参数
 epochs: 20  # 训练 epoch 数
 batch_size: 128  # 批大小
