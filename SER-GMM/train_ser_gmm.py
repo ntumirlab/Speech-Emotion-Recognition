@@ -14,8 +14,8 @@ def train_model(features):
     labels = gmm.predict(features)
     return (gmm,labels)
 
-def save_model(model,name):
-    save_dir = os.path.join(os.getcwd(), 'Models')
+def save_model(config, model,name):
+    save_dir = os.path.join(os.getcwd(), config.models_path)
     # Save model and weights
     if not os.path.isdir(save_dir):
         os.makedirs(save_dir)
@@ -30,7 +30,7 @@ def training(p_list, config):
     for i, lname in enumerate(config.class_labels):
         m_name = str(lname)+"_model"
         gmm_model ,train_labels=train_model(p_list[i])
-        save_model(gmm_model, m_name)
+        save_model(config, gmm_model, m_name)
     print('finished Training & Save!')
 
 if __name__ == "__main__":
