@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     with open(config.pickle_path + 'test.pickle', 'rb') as handle:
         test=pickle.load(handle)
-    
+
     with open(config.pickle_path + 'test_label.pickle', 'rb') as handle:
         test_label=pickle.load(handle)
 

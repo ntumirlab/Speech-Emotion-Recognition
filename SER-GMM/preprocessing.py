@@ -23,7 +23,7 @@ def data_split(X,Y):
     return (df,test,label_test)
 
 def fearture_setting(X, sample_rate, data, index):
-    
+
     stft = np.abs(librosa.stft(X))
 
     hot_len = int(0.010* sample_rate)
@@ -61,7 +61,7 @@ def fearture_setting(X, sample_rate, data, index):
     meanrms = np.mean(rmse)
     stdrms = np.std(rmse)
     maxrms = np.max(rmse)
-    
+
     sample_rate = np.array(sample_rate)
     mfccs = librosa.feature.mfcc(y=X, sr=sample_rate, hop_length=hot_len, n_fft=512, n_mfcc=13).T
     mfcc_delta=librosa.feature.delta(mfccs)
@@ -96,7 +96,7 @@ def fearture_setting(X, sample_rate, data, index):
     # hnr = sa_signal.get_HNR(X, sample_rate)
     # list_HNR = np.array([hnr for i in range(len(f0))]).reshape(len(f0), 1)
 
-    #pitch_tuning_offset, pitchmean, pitchstd, pitchmax, pitchmin,meancent, stdcent, maxcent, 
+    #pitch_tuning_offset, pitchmean, pitchstd, pitchmax, pitchmin,meancent, stdcent, maxcent,
     statics_feature = np.array([meanMagnitude, meanMagnitude, maxMagnitude, \
                                 meanrms, stdrms, maxrms])
 
@@ -106,12 +106,15 @@ def fearture_setting(X, sample_rate, data, index):
     # print(mfcc_delta.shape)
     # print(zcrs.shape)
     # print(contrast.shape)
-    
-    
+
+
     feature= np.hstack((mfccs, mfcc_delta, mfcc_delta2, zcrs, contrast, flatness))
     return feature
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> add config & utils
 def feature_extraction_train(df, dataset_path):
     data = np.asarray(())
     for i in tqdm(range(len(df))):
@@ -122,7 +125,7 @@ def feature_extraction_train(df, dataset_path):
             data = feature
         else:
             data = np.vstack((data,feature))
-            
+
     return np.array(data)
 
 def feature_extraction_test(df, dataset_path):
@@ -137,7 +140,7 @@ def feature_extraction_test(df, dataset_path):
         #     data = feature
         # else:
         #     data = np.vstack((data,feature))
-            
+
     return feature_list
 
 def pre_processing(config, label_name,dataset_path, pic_path):
@@ -163,7 +166,7 @@ def pre_processing(config, label_name,dataset_path, pic_path):
             data_df.loc[count] = [song_name,emo_labels]
             count += 1
         print("total:{} speeches".format(count))
-    
+
     elif config.dataset_name == "casia":
         data_df = pd.DataFrame(columns=['song_name', 'emo_labels'])
         count = 0
@@ -195,7 +198,7 @@ def pre_processing(config, label_name,dataset_path, pic_path):
         emo_test_list.append(emo_test)
         emo_test_labels_list.append(emo_test_labels)
 
-    
+
     test = pd.concat( emo_test_list, axis=0, sort=True).reset_index(drop=True)
     test_label = pd.concat( emo_test_labels_list, axis=0, sort=True).reset_index(drop=True)
 
@@ -207,7 +210,7 @@ def pre_processing(config, label_name,dataset_path, pic_path):
 
     with open(pic_path + 'test_feature_list.pickle', 'wb') as handle:
         pickle.dump(test_feature_list, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    
+
     with open(pic_path + 'test_label.pickle', 'wb') as handle:
         pickle.dump(test_label, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
