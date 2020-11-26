@@ -1,0 +1,8 @@
+
+model: gmm
+dataset_name: casia
+dataset_path: '/mnt/E/dataset/CASIA/full/'
+class_labels: ["angry", "fear", "happy", "neutral", "sad", "surprise"]
+
+pickle_path: './Data/train/CASIA/'
+models_path: './Models/CASIA/'
