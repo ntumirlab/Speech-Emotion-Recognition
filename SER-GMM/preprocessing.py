@@ -36,15 +36,15 @@ def fearture_setting(X, sample_rate, data, index):
     zcrs = librosa.feature.zero_crossing_rate(y=X, frame_length= int(0.025*sample_rate), hop_length = int(0.010* sample_rate))
     zcrs=zcrs.transpose()
 
-    # f0, voiced_flag, voiced_probs = librosa.pyin(X, frame_length= int(0.025*sample_rate), hop_length = int(0.010* sample_rate), fmin=librosa.note_to_hz('C2'), fmax=librosa.note_to_hz('C7'))
-    # f0[np.isnan(f0)] = 0.0
-    # f0 = f0.reshape(len(f0),1)
+    f0, voiced_flag, voiced_probs = librosa.pyin(X, frame_length= int(0.025*sample_rate), hop_length = int(0.010* sample_rate), fmin=librosa.note_to_hz('C2'), fmax=librosa.note_to_hz('C7'))
+    f0[np.isnan(f0)] = 0.0
+    f0 = f0.reshape(len(f0),1)
 
-    # hnr = sa_signal.get_HNR(X, sample_rate)
+    hnr = sa_signal.get_HNR(X, sample_rate)
 
-    # list_HNR = np.array([hnr for i in range(len(f0))]).reshape(len(f0), 1)
+    list_HNR = np.array([hnr for i in range(len(f0))]).reshape(len(f0), 1)
     
-    feature= np.hstack((feature, mfcc_delta, mfcc_delta2, ener, zcrs))
+    feature= np.hstack((feature, mfcc_delta, mfcc_delta2, ener, zcrs, f0, list_HNR))
     return feature
 
 def feature_extraction_train(df, dataset_path):
@@ -88,6 +88,7 @@ def pre_processing(config, label_name,dataset_path, pic_path):
             emo_labels = Labels[label_key]
             data_df.loc[count] = [song_name,emo_labels]
             count += 1
+        print("total:{} speeches".format(count))
 
     elif config.dataset_name == "nnime":
         data_df = pd.DataFrame(columns=['song_name', 'emo_labels'])
@@ -96,6 +97,16 @@ def pre_processing(config, label_name,dataset_path, pic_path):
             emo_labels = song_name[:-13]
             data_df.loc[count] = [song_name,emo_labels]
             count += 1
+        print("total:{} speeches".format(count))
+    
+    elif config.dataset_name == "casia":
+        data_df = pd.DataFrame(columns=['song_name', 'emo_labels'])
+        count = 0
+        for song_name in dir_list:
+            emo_labels = song_name.split('-')[1]
+            data_df.loc[count] = [song_name,emo_labels]
+            count += 1
+        print("total:{} speeches".format(count))
 
     # Dropping the none
     data_df = data_df[data_df.emo_labels != 'none'].reset_index(drop=True)
@@ -137,5 +148,4 @@ def pre_processing(config, label_name,dataset_path, pic_path):
 
 if __name__ == "__main__":
     config = opts.parse_opt()
-    # pre_processing(config.class_labels, config.dataset_path, config.pickle_path)
     pre_processing(config, config.class_labels, config.dataset_path, config.pickle_path)
