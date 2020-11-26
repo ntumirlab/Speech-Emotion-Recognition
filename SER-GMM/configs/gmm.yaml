@@ -1,0 +1,7 @@
+
+model: gmm
+dataset_path: '/mnt/E/dataset/emodb/'
+class_labels: ["anger", "boredom", "disgust", "neutral", "fear", "happiness", "sadness"]
+
+pickle_path: './Data/train/'
+models_path: './Models/'
