@@ -67,36 +67,21 @@ def evaluate():
     with open('./Data/train/test_label.pickle', 'rb') as handle:
         test_label = pickle.load(handle)
 
-    # label_name = ["anger", "boredom", "disgust", "neutral", "fear", "happiness", "sadness"]
-
-    # anger, boredom, disgust, neutral, fear, happiness, sadness, test, test_label = pre_processing()
-
     predict  = test_model(gmm_anger, gmm_boredom, gmm_disgust, gmm_neutral, gmm_fear, gmm_happiness,gmm_sadness,test_feature_list)
 
     label_name = ["anger", "boredom", "disgust", "neutral", "fear", "happiness", "sadness"]
 
-    testing_label= label_binarize(test_label, classes=["anger", "boredom", "disgust", "neutral", "fear", "happiness", "sadness"])
-    testing_predict= label_binarize(predict, classes=["anger", "boredom", "disgust", "neutral", "fear", "happiness", "sadness"])
+    testing_label= label_binarize(test_label, classes = label_name )
+    testing_predict= label_binarize(predict, classes = label_name )
 
-    f1_sum = 0.0
-    for i in range(len(label_name)):
-    #print(label_name[i])
-        f1 = f1_score(testing_label[:, i], testing_predict[:, i])
-        print('{} f1_scores:{}'.format(label_name[i], f1))
-        f1_sum += float(f1)
+    c = confusion_matrix(test_label, predict)
+    aver_acc = accuracy(c)
+    cm = c.astype('float') / c.sum(axis=1)[:, np.newaxis]*100
+    print("aver_acc:{}%".format(round(aver_acc*100, 2)))
+    for i, lname in enumerate(label_name):
+        print('{} acc: {}%'.format(lname , round(cm[i][i], 2)))
 
-    print('averge f1 score:', f1_sum/len(label_name))
 
-    print('----------------------------------------------------')
-
-    # ss_sum = 0.0
-    # for i in range(7):
-    # #print(label_name[i])
-    #     accuracy = accuracy_score(testing_label[:, i], testing_predict[:, i])
-    #     print('{} accuracy score:{}'.format(label_name[i], accuracy))
-    #     ss_sum += float(accuracy)
-
-    # print('averge accuracy score:', ss_sum/7)
 
     
 
