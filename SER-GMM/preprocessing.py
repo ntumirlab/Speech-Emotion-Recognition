@@ -62,134 +62,72 @@ def feature_extraction_train(df, dataset_path):
 
 def feature_extraction_test(df, dataset_path):
     feature_list = []
+    #data = np.asarray(())
     for i in tqdm(range(len(df))):
         X, sample_rate = librosa.load(dataset_path + df[i], res_type='kaiser_fast', sr=16000)
         feature = fearture_setting(X, sample_rate, df, i)
 
         feature_list.append(feature)
+        # if data.size==0:
+        #     data = feature
+        # else:
+        #     data = np.vstack((data,feature))
             
     return feature_list
 
-def pre_processing(label_name,dataset_path, pic_path):
-
+def pre_processing(config, label_name,dataset_path, pic_path):
     dir_list = os.listdir(dataset_path)
     dir_list.sort()
 
-    Labels = { 'W':'anger', 'L':'boredom', 'E':'disgust', 'N':'neutral', 'A':'fear', 'F':'happiness', 'T':'sadness' }
-    # label_name = ["anger", "boredom", "disgust", "neutral", "fear", "happiness", "sadness"]
+    if config.dataset_name == "emodb":
+        Labels = { 'W':'anger', 'L':'boredom', 'E':'disgust', 'N':'neutral', 'A':'fear', 'F':'happiness', 'T':'sadness' }
+        data_df = pd.DataFrame(columns=['song_name', 'emo_labels'])
+        count = 0
+        for song_name in dir_list:
+            label_key = song_name[5]
+            emo_labels = Labels[label_key]
+            data_df.loc[count] = [song_name,emo_labels]
+            count += 1
 
-    # Creating dataframe for Emo-DB
-    data_df = pd.DataFrame(columns=['song_name', 'emo_labels'])
-    count = 0
-    for song_name in dir_list:
-        label_key = song_name[5]
-        emo_labels = Labels[label_key]
-        data_df.loc[count] = [song_name,emo_labels]
-        count += 1
+    elif config.dataset_name == "nnime":
+        data_df = pd.DataFrame(columns=['song_name', 'emo_labels'])
+        count = 0
+        for song_name in dir_list:
+            emo_labels = song_name[:-13]
+            data_df.loc[count] = [song_name,emo_labels]
+            count += 1
 
     # Dropping the none
     data_df = data_df[data_df.emo_labels != 'none'].reset_index(drop=True)
 
-    # Separating the dataset for different emotion
-    df_anger = data_df[data_df.emo_labels == 'anger']
-    df_anger = df_anger.reset_index(drop = True)
+    emo_test_list, emo_test_labels_list = [], []
+    for i, lname in enumerate(label_name):
+        df_temp = data_df[data_df.emo_labels == lname]
+        df_temp = df_temp.reset_index(drop = True)
 
-    df_boredom = data_df[data_df.emo_labels == 'boredom']
-    df_boredom = df_boredom.reset_index(drop = True)
+        X = df_temp["song_name"]
+        Y = df_temp["emo_labels"]
+        d_train, emo_test, emo_test_labels = data_split(X, Y)
 
-    df_disgust = data_df[data_df.emo_labels == 'disgust']
-    df_disgust = df_disgust.reset_index(drop = True)
+        print('Feature Extraction:{}'.format(lname))
+        feature = feature_extraction_train(d_train, dataset_path)
 
-    df_neutral = data_df[data_df.emo_labels == 'neutral']
-    df_neutral = df_neutral.reset_index(drop = True)
+        save_pick_name = pic_path + lname + '.pickle'
+        with open(save_pick_name, 'wb') as p:
+            pickle.dump(feature, p, protocol=pickle.HIGHEST_PROTOCOL)
 
-    df_fear = data_df[data_df.emo_labels == 'fear']
-    df_fear = df_fear.reset_index(drop = True)
+        emo_test_list.append(emo_test)
+        emo_test_labels_list.append(emo_test_labels)
 
-    df_happiness = data_df[data_df.emo_labels == 'happiness']
-    df_happiness = df_happiness.reset_index(drop = True)
-
-    df_sadness = data_df[data_df.emo_labels == 'sadness']
-    df_sadness = df_sadness.reset_index(drop = True)
-
-    # Data Spliting
-    X = df_anger["song_name"]
-    Y = df_anger["emo_labels"]
-    d_anger, anger_test, anger_label_test = data_split(X, Y)
-
-    X = df_boredom["song_name"]
-    Y = df_boredom["emo_labels"]
-    d_boredom, boredom_test, boredom_label_test = data_split(X, Y)
-
-    X = df_disgust["song_name"]
-    Y = df_disgust["emo_labels"]
-    d_disgust, disgust_test, disgust_label_test = data_split(X, Y)
-
-    X = df_neutral["song_name"]
-    Y = df_neutral["emo_labels"]
-    d_neutral, neutral_test, neutral_label_test = data_split(X, Y)
-
-    X = df_fear["song_name"]
-    Y = df_fear["emo_labels"]
-    d_fear, fear_test, fear_label_test = data_split(X, Y)
-
-    X = df_happiness["song_name"]
-    Y = df_happiness["emo_labels"]
-    d_happiness, happiness_test, happiness_label_test = data_split(X, Y)
-
-    X = df_sadness["song_name"]
-    Y = df_sadness["emo_labels"]
-    d_sadness, sadness_test, sadness_label_test = data_split(X, Y)
-
-    test = pd.concat([anger_test, boredom_test, disgust_test, neutral_test, fear_test, happiness_test, sadness_test], axis=0, sort=True).reset_index(drop=True)
-    test_label = pd.concat([anger_label_test, boredom_label_test, disgust_label_test, neutral_label_test, fear_label_test, happiness_label_test, sadness_label_test], axis=0, sort=True).reset_index(drop=True)
-
-    # print(d_anger)
-
-    print('Feature Extraction: angry')
-    anger = feature_extraction_train(d_anger, dataset_path)
-
-    print('Feature Extraction: boredom')
-    boredom = feature_extraction_train(d_boredom, dataset_path)
-    print('Feature Extraction: disgust')
-    disgust = feature_extraction_train(d_disgust, dataset_path)
-    print('Feature Extraction: neutral')
-    neutral = feature_extraction_train(d_neutral, dataset_path)
-    print('Feature Extraction: fear')
-    fear = feature_extraction_train(d_fear, dataset_path)
-    print('Feature Extraction: happiness')
-    happiness = feature_extraction_train(d_happiness, dataset_path)
-    print('Feature Extraction: sadness')
-    sadness = feature_extraction_train(d_sadness, dataset_path)
-
-    print('Feature Extraction: test')
-    test_feature_list = feature_extraction_test(test, dataset_path)
-    # print("test_feature_list:", len(test_feature_list))
-    # print("test_label:", test_label.shape)
-
-    with open(pic_path + 'anger.pickle', 'wb') as handle:
-        pickle.dump(anger, handle, protocol=pickle.HIGHEST_PROTOCOL)
     
-    with open(pic_path + 'boredom.pickle', 'wb') as handle:
-        pickle.dump(boredom, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-    with open(pic_path + 'disgust.pickle', 'wb') as handle:
-        pickle.dump(disgust, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-    with open(pic_path + 'neutral.pickle', 'wb') as handle:
-        pickle.dump(neutral, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    
-    with open(pic_path + 'fear.pickle', 'wb') as handle:
-        pickle.dump(fear, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-    with open(pic_path + 'happiness.pickle', 'wb') as handle:
-        pickle.dump(happiness, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    
-    with open(pic_path + 'sadness.pickle', 'wb') as handle:
-        pickle.dump(sadness, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    test = pd.concat( emo_test_list, axis=0, sort=True).reset_index(drop=True)
+    test_label = pd.concat( emo_test_labels_list, axis=0, sort=True).reset_index(drop=True)
 
     with open(pic_path + 'test.pickle', 'wb') as handle:
         pickle.dump(test, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    print('Feature Extraction: test')
+    test_feature_list = feature_extraction_test(test, dataset_path)
 
     with open(pic_path + 'test_feature_list.pickle', 'wb') as handle:
         pickle.dump(test_feature_list, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -199,4 +137,5 @@ def pre_processing(label_name,dataset_path, pic_path):
 
 if __name__ == "__main__":
     config = opts.parse_opt()
-    pre_processing(config.class_labels, config.dataset_path, config.pickle_path)
+    # pre_processing(config.class_labels, config.dataset_path, config.pickle_path)
+    pre_processing(config, config.class_labels, config.dataset_path, config.pickle_path)
