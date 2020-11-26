@@ -1,0 +1,8 @@
+
+model: gmm
+dataset_name: nnime
+dataset_path: '/mnt/E/dataset/NNIME/RecordingsofAudio/SentenceLevel/Speech/'
+class_labels: ['angry', 'sad', 'happy', 'frustration', 'neutral', 'surprise']
+
+pickle_path: './Data/train/NNIME/'
+models_path: './Models/NNIME/'
