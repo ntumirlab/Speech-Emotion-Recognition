@@ -162,7 +162,11 @@ def pre_processing(config, label_name,dataset_path, pic_path):
             data_df.loc[count] = [song_name,emo_labels]
             count += 1
         print("total:{} speeches".format(count))
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> update 3dataset result
     elif config.dataset_name == "casia":
         data_df = pd.DataFrame(columns=['song_name', 'emo_labels'])
         count = 0
