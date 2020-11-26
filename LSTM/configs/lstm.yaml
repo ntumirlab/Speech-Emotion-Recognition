@@ -19,8 +19,8 @@ predict_feature_path_librosa: features/6-category/test_librosa_emodb.p  # 预测
 feature_method: o  # 'o': opensmile, 'l': librosa
 
 # Opensmile 配置，只在 'feature_method: o' 时 需要设置
-opensmile_path: /home/victor/Project/util/opensmile/build/progsrc/smilextract # Opensmile 安装路径
-opensmile_config: /home/victor/Project/util/opensmile/config/is09-13/IS10_paraling.conf # Opensmile 标准特征集
+opensmile_path: ~/yuhuei/opensmile/build/progsrc/smilextract  # Opensmile 安装路径
+opensmile_config: ~/yuhuei/opensmile/config/is09-13/IS10_paraling.conf # Opensmile 标准特征集
 # checkpoints
 checkpoint_path: checkpoints/  # checkpoint 存储路径
 #checkpoint_name: LSTM_OPENSMILE_IS10  # checkpoint 文件名
