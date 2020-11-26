@@ -30,8 +30,7 @@ class LSTM(DNN_Model):
         if model == 'lstm':
             self.model.add(KERAS_LSTM(rnn_size, input_shape=(1, self.input_shape)))
         elif model == 'blstm': 
-            self.model.add(Bidirectional(KERAS_LSTM(rnn_size, return_sequences=True), input_shape=(1, self.input_shape))) # (time_steps = 1, n_feats)
-            self.model.add(Bidirectional(KERAS_LSTM(rnn_size)))
+            self.model.add(Bidirectional(KERAS_LSTM(rnn_size), input_shape=(1, self.input_shape)))
         # self.model.add(Dropout(dropout))
         # self.model.add(Dense(hidden_size, activation='relu'))
         # self.model.add(Dense(rnn_size, activation='tanh'))
