@@ -4,7 +4,5 @@ dataset_name: emodb
 dataset_path: '/mnt/E/dataset/emodb/'
 class_labels: ["anger", "boredom", "disgust", "neutral", "fear", "happiness", "sadness"]
 
-pickle_path: 'Data/train/emodb/'
-models_path: 'Models/emodb/'
-
-component_num: 5
+pickle_path: './Data/train/emodb/'
+models_path: './Models/emodb/'

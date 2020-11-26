@@ -111,10 +111,6 @@ def fearture_setting(X, sample_rate, data, index):
     feature= np.hstack((mfccs, mfcc_delta, mfcc_delta2, zcrs, contrast, flatness))
     return feature
 
-<<<<<<< HEAD
-
-=======
->>>>>>> add config & utils
 def feature_extraction_train(df, dataset_path):
     data = np.asarray(())
     for i in tqdm(range(len(df))):
@@ -198,12 +194,14 @@ def pre_processing(config, label_name,dataset_path, pic_path):
         emo_test_list.append(emo_test)
         emo_test_labels_list.append(emo_test_labels)
 
-
     test = pd.concat( emo_test_list, axis=0, sort=True).reset_index(drop=True)
     test_label = pd.concat( emo_test_labels_list, axis=0, sort=True).reset_index(drop=True)
 
     with open(pic_path + 'test.pickle', 'wb') as handle:
         pickle.dump(test, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    print('Feature Extraction: test')
+    test_feature_list = feature_extraction_test(test, dataset_path)
 
     print('Feature Extraction: test')
     test_feature_list = feature_extraction_test(test, dataset_path)
