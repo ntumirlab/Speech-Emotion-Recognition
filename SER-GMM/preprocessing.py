@@ -3,9 +3,12 @@ import librosa
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+import yaml
 import pickle
 from sklearn.model_selection import StratifiedShuffleSplit
 import Signal_Analysis.features.signal as sa_signal
+
+import utils.opts as opts
 
 def data_split(X,Y):
     xxx = StratifiedShuffleSplit(1, test_size=0.2, random_state=12)
@@ -44,10 +47,10 @@ def fearture_setting(X, sample_rate, data, index):
     feature= np.hstack((feature, mfcc_delta, mfcc_delta2, ener, zcrs))
     return feature
 
-def feature_extraction_train(df):
+def feature_extraction_train(df, dataset_path):
     data = np.asarray(())
     for i in tqdm(range(len(df))):
-        X, sample_rate = librosa.load('Data/wav/' + df.song_name[i], res_type='kaiser_fast', sr=16000)
+        X, sample_rate = librosa.load(dataset_path + df.song_name[i], res_type='kaiser_fast', sr=16000)
         feature = fearture_setting(X, sample_rate, df, i)
 
         if data.size==0:
@@ -57,23 +60,23 @@ def feature_extraction_train(df):
             
     return np.array(data)
 
-def feature_extraction_test(df):
+def feature_extraction_test(df, dataset_path):
     feature_list = []
     for i in tqdm(range(len(df))):
-        X, sample_rate = librosa.load('Data/wav/' + df[i], res_type='kaiser_fast', sr=16000)
+        X, sample_rate = librosa.load(dataset_path + df[i], res_type='kaiser_fast', sr=16000)
         feature = fearture_setting(X, sample_rate, df, i)
 
         feature_list.append(feature)
             
     return feature_list
 
-def pre_processing():
+def pre_processing(label_name,dataset_path, pic_path):
 
-    dir_list = os.listdir('Data/wav')
+    dir_list = os.listdir(dataset_path)
     dir_list.sort()
 
     Labels = { 'W':'anger', 'L':'boredom', 'E':'disgust', 'N':'neutral', 'A':'fear', 'F':'happiness', 'T':'sadness' }
-    label_name = ["anger", "boredom", "disgust", "neutral", "fear", "happiness", "sadness"]
+    # label_name = ["anger", "boredom", "disgust", "neutral", "fear", "happiness", "sadness"]
 
     # Creating dataframe for Emo-DB
     data_df = pd.DataFrame(columns=['song_name', 'emo_labels'])
@@ -109,14 +112,10 @@ def pre_processing():
     df_sadness = data_df[data_df.emo_labels == 'sadness']
     df_sadness = df_sadness.reset_index(drop = True)
 
-    #print("df_anger:", df_anger)
-
     # Data Spliting
     X = df_anger["song_name"]
     Y = df_anger["emo_labels"]
     d_anger, anger_test, anger_label_test = data_split(X, Y)
-
-    #print("d_anger:", d_anger)
 
     X = df_boredom["song_name"]
     Y = df_boredom["emo_labels"]
@@ -148,66 +147,56 @@ def pre_processing():
     # print(d_anger)
 
     print('Feature Extraction: angry')
-    anger = feature_extraction_train(d_anger)
+    anger = feature_extraction_train(d_anger, dataset_path)
 
     print('Feature Extraction: boredom')
-    boredom = feature_extraction_train(d_boredom)
+    boredom = feature_extraction_train(d_boredom, dataset_path)
     print('Feature Extraction: disgust')
-    disgust = feature_extraction_train(d_disgust)
+    disgust = feature_extraction_train(d_disgust, dataset_path)
     print('Feature Extraction: neutral')
-    neutral = feature_extraction_train(d_neutral)
+    neutral = feature_extraction_train(d_neutral, dataset_path)
     print('Feature Extraction: fear')
-    fear = feature_extraction_train(d_fear)
+    fear = feature_extraction_train(d_fear, dataset_path)
     print('Feature Extraction: happiness')
-    happiness = feature_extraction_train(d_happiness)
+    happiness = feature_extraction_train(d_happiness, dataset_path)
     print('Feature Extraction: sadness')
-    sadness = feature_extraction_train(d_sadness)
+    sadness = feature_extraction_train(d_sadness, dataset_path)
 
     print('Feature Extraction: test')
-    test_feature_list = feature_extraction_test(test)
+    test_feature_list = feature_extraction_test(test, dataset_path)
     # print("test_feature_list:", len(test_feature_list))
     # print("test_label:", test_label.shape)
 
-    with open('./Data/train/anger.pickle', 'wb') as handle:
+    with open(pic_path + 'anger.pickle', 'wb') as handle:
         pickle.dump(anger, handle, protocol=pickle.HIGHEST_PROTOCOL)
     
-    with open('./Data/train/boredom.pickle', 'wb') as handle:
+    with open(pic_path + 'boredom.pickle', 'wb') as handle:
         pickle.dump(boredom, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    with open('./Data/train/disgust.pickle', 'wb') as handle:
+    with open(pic_path + 'disgust.pickle', 'wb') as handle:
         pickle.dump(disgust, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    with open('./Data/train/neutral.pickle', 'wb') as handle:
+    with open(pic_path + 'neutral.pickle', 'wb') as handle:
         pickle.dump(neutral, handle, protocol=pickle.HIGHEST_PROTOCOL)
     
-    with open('./Data/train/fear.pickle', 'wb') as handle:
+    with open(pic_path + 'fear.pickle', 'wb') as handle:
         pickle.dump(fear, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    with open('./Data/train/happiness.pickle', 'wb') as handle:
+    with open(pic_path + 'happiness.pickle', 'wb') as handle:
         pickle.dump(happiness, handle, protocol=pickle.HIGHEST_PROTOCOL)
     
-    with open('./Data/train/sadness.pickle', 'wb') as handle:
+    with open(pic_path + 'sadness.pickle', 'wb') as handle:
         pickle.dump(sadness, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    with open('./Data/train/test.pickle', 'wb') as handle:
+    with open(pic_path + 'test.pickle', 'wb') as handle:
         pickle.dump(test, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    with open('./Data/train/test_feature_list.pickle', 'wb') as handle:
+    with open(pic_path + 'test_feature_list.pickle', 'wb') as handle:
         pickle.dump(test_feature_list, handle, protocol=pickle.HIGHEST_PROTOCOL)
     
-    with open('./Data/train/test_label.pickle', 'wb') as handle:
+    with open(pic_path + 'test_label.pickle', 'wb') as handle:
         pickle.dump(test_label, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    # return anger, boredom, disgust, neutral, fear, happiness, sadness, test, test_label
-
 if __name__ == "__main__":
-    pre_processing()
-    # print(anger.shape)
-    # print(boredom.shape)
-    # print(disgust.shape)
-    # print(neutral.shape)
-    # print(fear.shape)
-    # print(happiness.shape)
-    # print(sadness.shape)
-    # print(test.shape)
-    # print(test_label.shape)
+    config = opts.parse_opt()
+    pre_processing(config.class_labels, config.dataset_path, config.pickle_path)
