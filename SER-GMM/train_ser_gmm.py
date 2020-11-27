@@ -9,8 +9,8 @@ import yaml
 # own package
 import utils.opts as opts
 
-def train_model(features):
-    gmm = GaussianMixture(n_components=5).fit(features)
+def train_model(config, features):
+    gmm = GaussianMixture(n_components=config.component_num, tol=0.88,n_init=5).fit(features)
     labels = gmm.predict(features)
     return (gmm,labels)
 
@@ -29,7 +29,7 @@ def training(p_list, config):
     print('Begining of Training & save!')
     for i, lname in enumerate(config.class_labels):
         m_name = str(lname)+"_model"
-        gmm_model ,train_labels=train_model(p_list[i])
+        gmm_model ,train_labels=train_model(config, p_list[i])
         save_model(config, gmm_model, m_name)
     print('finished Training & Save!')
 
