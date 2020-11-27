@@ -23,7 +23,6 @@ def data_split(X,Y):
     return (df,test,label_test)
 
 def fearture_setting(X, sample_rate, data, index):
-
     stft = np.abs(librosa.stft(X))
 
     hot_len = int(0.010* sample_rate)
@@ -61,7 +60,6 @@ def fearture_setting(X, sample_rate, data, index):
     meanrms = np.mean(rmse)
     stdrms = np.std(rmse)
     maxrms = np.max(rmse)
-
     sample_rate = np.array(sample_rate)
     mfccs = librosa.feature.mfcc(y=X, sr=sample_rate, hop_length=hot_len, n_fft=512, n_mfcc=13).T
     mfcc_delta=librosa.feature.delta(mfccs)
@@ -110,6 +108,7 @@ def fearture_setting(X, sample_rate, data, index):
 
     feature= np.hstack((mfccs, mfcc_delta, mfcc_delta2, zcrs, contrast, flatness))
     return feature
+
 
 def feature_extraction_train(df, dataset_path):
     data = np.asarray(())
@@ -162,11 +161,6 @@ def pre_processing(config, label_name,dataset_path, pic_path):
             data_df.loc[count] = [song_name,emo_labels]
             count += 1
         print("total:{} speeches".format(count))
-<<<<<<< HEAD
-
-=======
-
->>>>>>> update 3dataset result
     elif config.dataset_name == "casia":
         data_df = pd.DataFrame(columns=['song_name', 'emo_labels'])
         count = 0
