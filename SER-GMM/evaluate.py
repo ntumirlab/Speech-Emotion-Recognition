@@ -49,6 +49,8 @@ def evaluate(config):
     c = confusion_matrix(test_label, predict)
     aver_acc = accuracy(c)
     cm = c.astype('float') / c.sum(axis=1)[:, np.newaxis]*100
+
+    print(cm)
     print("aver_acc:{}%".format(round(aver_acc*100, 2)))
     for i, lname in enumerate(config.class_labels):
         print('{} acc: {}%'.format(lname , round(cm[i][i], 2)))
