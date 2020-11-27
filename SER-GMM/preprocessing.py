@@ -23,29 +23,94 @@ def data_split(X,Y):
     return (df,test,label_test)
 
 def fearture_setting(X, sample_rate, data, index):
+    
+    stft = np.abs(librosa.stft(X))
 
+    hot_len = int(0.010* sample_rate)
+
+    frame_len =  int(0.015*sample_rate)
+
+    # # fmin 和 fmax 对应于人类语音的最小最大基本频率
+    # pitches, magnitudes = librosa.piptrack(X, sr = sample_rate, S = stft, fmin = 70, fmax = 400)
+    # pitch = []
+    # for i in range(magnitudes.shape[1]):
+    #     index = magnitudes[:, 1].argmax()
+    #     pitch.append(pitches[index, i])
+
+    # pitch_tuning_offset = librosa.pitch_tuning(pitches)
+    # pitchmean = np.mean(pitch)
+    # pitchstd = np.std(pitch)
+    # pitchmax = np.max(pitch)
+    # pitchmin = np.min(pitch)
+    #print(stft)
+
+    # # 频谱质心
+    # cent = librosa.feature.spectral_centroid(y = X, sr = sample_rate)
+    # cent = cent / np.sum(cent)
+    # meancent = np.mean(cent)
+    # stdcent = np.std(cent)
+    # maxcent = np.max(cent)
+
+    S, phase = librosa.magphase(stft)
+    meanMagnitude = np.mean(S)
+    stdMagnitude = np.std(S)
+    maxMagnitude = np.max(S)
+
+    # 均方根能量
+    rmse = librosa.feature.rms(S=S)[0]
+    meanrms = np.mean(rmse)
+    stdrms = np.std(rmse)
+    maxrms = np.max(rmse)
+    
     sample_rate = np.array(sample_rate)
-    mfccs = librosa.feature.mfcc(y=X, sr=sample_rate, hop_length=int(0.010*sample_rate), n_fft=512, n_mfcc=13)
-    feature = mfccs.transpose()
-    mfcc_delta=librosa.feature.delta(feature)
-    mfcc_delta2=librosa.feature.delta(feature, order=2)
-    ener = librosa.feature.rms(y=X, frame_length= int(0.025*sample_rate), hop_length = int(0.010* sample_rate))
-    ener=ener.transpose()
+    mfccs = librosa.feature.mfcc(y=X, sr=sample_rate, hop_length=hot_len, n_fft=512, n_mfcc=13).T
+    mfcc_delta=librosa.feature.delta(mfccs)
+    mfcc_delta2=librosa.feature.delta(mfccs, order=2)
+    #ener = librosa.feature.rms(y=X, frame_length= int(0.015*sample_rate), hop_length = hot_len).T
 
     # ZCR
-    zcrs = librosa.feature.zero_crossing_rate(y=X, frame_length= int(0.025*sample_rate), hop_length = int(0.010* sample_rate))
-    zcrs=zcrs.transpose()
+    zcrs = librosa.feature.zero_crossing_rate(y=X, frame_length= frame_len, hop_length = hot_len).T
 
-    f0, voiced_flag, voiced_probs = librosa.pyin(X, frame_length= int(0.025*sample_rate), hop_length = int(0.010* sample_rate), fmin=librosa.note_to_hz('C2'), fmax=librosa.note_to_hz('C7'))
-    f0[np.isnan(f0)] = 0.0
-    f0 = f0.reshape(len(f0),1)
+    # 色谱图
+    # chroma = librosa.feature.chroma_stft(y=X, sr = sample_rate, hop_length = hot_len).T
 
-    hnr = sa_signal.get_HNR(X, sample_rate)
+    # 梅尔频率
+    # mel = librosa.feature.melspectrogram(y=X, sr = sample_rate, hop_length = hot_len).T
 
-    list_HNR = np.array([hnr for i in range(len(f0))]).reshape(len(f0), 1)
+    # ottava对比
+    contrast = librosa.feature.spectral_contrast(y= X, sr = sample_rate, hop_length = hot_len).T
+
+
+    # 谱平面
+    flatness = librosa.feature.spectral_flatness(y = X, hop_length = hot_len).T
+
+    # f0, voiced_flag, voiced_probs = librosa.pyin(
+    #         X, \
+    #         frame_length= frame_len, \
+    #         hop_length = hot_len, \
+    #         fmin=librosa.note_to_hz('C2'), \
+    #         fmax=librosa.note_to_hz('C7'))
+    # f0[np.isnan(f0)] = 0.0
+    # f0 = f0.reshape(len(f0),1)
+
+    # hnr = sa_signal.get_HNR(X, sample_rate)
+    # list_HNR = np.array([hnr for i in range(len(f0))]).reshape(len(f0), 1)
+
+    #pitch_tuning_offset, pitchmean, pitchstd, pitchmax, pitchmin,meancent, stdcent, maxcent, 
+    statics_feature = np.array([meanMagnitude, meanMagnitude, maxMagnitude, \
+                                meanrms, stdrms, maxrms])
+
+    list_sf = np.array([statics_feature for i in range(len(flatness))]).reshape(len(flatness), len(statics_feature))
+    # print("statics_feature.shape:", list_sf.shape)
+    # print(mfccs.shape)
+    # print(mfcc_delta.shape)
+    # print(zcrs.shape)
+    # print(contrast.shape)
     
-    feature= np.hstack((feature, mfcc_delta, mfcc_delta2, ener, zcrs, f0, list_HNR))
+    
+    feature= np.hstack((mfccs, mfcc_delta, mfcc_delta2, zcrs, contrast, flatness))
     return feature
+
 
 def feature_extraction_train(df, dataset_path):
     data = np.asarray(())
