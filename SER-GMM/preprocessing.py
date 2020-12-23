@@ -132,6 +132,10 @@ def feature_extraction_test(df, dataset_path):
         feature = fearture_setting(X, sample_rate, df, i)
 
         feature_list.append(feature)
+        # if data.size==0:
+        #     data = feature
+        # else:
+        #     data = np.vstack((data,feature))
             
     return feature_list
 

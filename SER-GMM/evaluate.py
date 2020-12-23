@@ -18,6 +18,7 @@ def unwegiht_accuracy(confusion_matrix):
     sum_of_all_elements = confusion_matrix.sum()
     return diagonal_sum / sum_of_all_elements
 
+<<<<<<< HEAD
 def wegiht_accuracy(confusion_matrix):
     w_acc = 0
     for i, num in enumerate(confusion_matrix):
@@ -27,6 +28,8 @@ def wegiht_accuracy(confusion_matrix):
         w_acc += lab_acc
     return w_acc / len(confusion_matrix)
 
+=======
+>>>>>>> 86b42fe65c528ef862971c03dae3f53defe778d0
 def load_model(config, name):
     with open( config.models_path + name+".sav", 'rb') as pickle_file:
         return pickle.load(pickle_file)
@@ -45,6 +48,7 @@ def test_model(model_list, f_list):
     
     return predict
 
+<<<<<<< HEAD
 def evaluate(config,comp):
     model_list = []
     model_names = [ name + '_model'+str(comp) for name in config.class_labels]
@@ -55,6 +59,18 @@ def evaluate(config,comp):
         test_feature_list = pickle.load(handle)
     
     with open( config.pickle_path + 'y_test.pickle', 'rb') as handle:
+=======
+def evaluate(config):
+    model_list = []
+    model_names = [ name + '_model' for name in config.class_labels]
+    for model_name in model_names:
+        model_list.append(load_model(config, model_name))
+
+    with open( config.pickle_path + 'test_feature_list.pickle', 'rb') as handle:
+        test_feature_list = pickle.load(handle)
+    
+    with open( config.pickle_path + 'test_label.pickle', 'rb') as handle:
+>>>>>>> 86b42fe65c528ef862971c03dae3f53defe778d0
         test_label = pickle.load(handle)
 
     predict  = test_model(model_list,test_feature_list)
@@ -65,6 +81,7 @@ def evaluate(config,comp):
     w_acc = wegiht_accuracy(c)
 
     cm = c.astype('float') / c.sum(axis=1)[:, np.newaxis]*100
+<<<<<<< HEAD
 
     for first_index in range(len(cm)): 
         for second_index in range(len(cm[first_index])): 
@@ -86,3 +103,14 @@ if __name__ == "__main__":
     for com  in config.component_num:
         print("evaluate with component:", com)
         evaluate(config,com)
+=======
+
+    print(cm)
+    print("aver_acc:{}%".format(round(aver_acc*100, 2)))
+    for i, lname in enumerate(config.class_labels):
+        print('{} acc: {}%'.format(lname , round(cm[i][i], 2)))
+
+if __name__ == "__main__":
+    config = opts.parse_opt()
+    evaluate(config)
+>>>>>>> 86b42fe65c528ef862971c03dae3f53defe778d0
