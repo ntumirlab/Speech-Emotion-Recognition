@@ -1,6 +1,0 @@
-features/*
-checkpoints/*
-*/__pycache__
-*.pyc
-*.png
-/tmp/
