@@ -1,0 +1,11 @@
+
+model: gmm
+dataset_name: iemocap
+dataset_path: '/mnt/E/dataset/IEMOCAP_full_release/selected_wav/'
+class_labels: ['ang', 'sad', 'neu', 'hap']
+
+pickle_path: 'Data/train/iemocap/'
+models_path: 'Models/iemocap/'
+res_path: 'Result/iemocap/'
+
+component_num: [5, 7 ,10, 16, 32, 64 , 128, 256, 512]

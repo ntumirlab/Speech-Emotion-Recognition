@@ -13,14 +13,13 @@ import utils.opts as opts
 def data_split(X,Y):
     xxx = StratifiedShuffleSplit(1, test_size=0.2, random_state=12)
     for train_index, test_index in xxx.split(X, Y):
-        train, test = X.iloc[train_index], X.iloc[test_index]
-        label_train, label_test = Y.iloc[train_index], Y.iloc[test_index]
-    df=pd.DataFrame(columns=["song_name"])
-    df=pd.DataFrame(train)
-    df=df.reset_index(drop=True)
-    test=test.reset_index(drop=True)
-    label_test=label_test.reset_index(drop=True)
-    return (df,test,label_test)
+        X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+        y_train, y_test = Y.iloc[train_index], Y.iloc[test_index]
+    df_train = pd.DataFrame(X_train)
+    df_train = df_train.reset_index(drop=True)
+    X_test = X_test.reset_index(drop=True)
+    y_test = y_test.reset_index(drop=True)
+    return (df_train, y_train, X_test, y_test)
 
 def fearture_setting(X, sample_rate, data, index):
     
@@ -51,16 +50,16 @@ def fearture_setting(X, sample_rate, data, index):
     # stdcent = np.std(cent)
     # maxcent = np.max(cent)
 
-    S, phase = librosa.magphase(stft)
-    meanMagnitude = np.mean(S)
-    stdMagnitude = np.std(S)
-    maxMagnitude = np.max(S)
+    # S, phase = librosa.magphase(stft)
+    # meanMagnitude = np.mean(S)
+    # stdMagnitude = np.std(S)
+    # maxMagnitude = np.max(S)
 
-    # 均方根能量
-    rmse = librosa.feature.rms(S=S)[0]
-    meanrms = np.mean(rmse)
-    stdrms = np.std(rmse)
-    maxrms = np.max(rmse)
+    # # 均方根能量
+    # rmse = librosa.feature.rms(S=S)[0]
+    # meanrms = np.mean(rmse)
+    # stdrms = np.std(rmse)
+    # maxrms = np.max(rmse)
     
     sample_rate = np.array(sample_rate)
     mfccs = librosa.feature.mfcc(y=X, sr=sample_rate, hop_length=hot_len, n_fft=512, n_mfcc=13).T
@@ -97,17 +96,17 @@ def fearture_setting(X, sample_rate, data, index):
     # list_HNR = np.array([hnr for i in range(len(f0))]).reshape(len(f0), 1)
 
     #pitch_tuning_offset, pitchmean, pitchstd, pitchmax, pitchmin,meancent, stdcent, maxcent, 
-    statics_feature = np.array([meanMagnitude, meanMagnitude, maxMagnitude, \
-                                meanrms, stdrms, maxrms])
+    # statics_feature = np.array([meanMagnitude, meanMagnitude, maxMagnitude, \
+    #                             meanrms, stdrms, maxrms])
 
-    list_sf = np.array([statics_feature for i in range(len(flatness))]).reshape(len(flatness), len(statics_feature))
+    # list_sf = np.array([statics_feature for i in range(len(flatness))]).reshape(len(flatness), len(statics_feature))
     # print("statics_feature.shape:", list_sf.shape)
     # print(mfccs.shape)
     # print(mfcc_delta.shape)
     # print(zcrs.shape)
     # print(contrast.shape)
     
-    
+    # , contrast, flatness
     feature= np.hstack((mfccs, mfcc_delta, mfcc_delta2, zcrs, contrast, flatness))
     return feature
 
@@ -133,12 +132,23 @@ def feature_extraction_test(df, dataset_path):
         feature = fearture_setting(X, sample_rate, df, i)
 
         feature_list.append(feature)
-        # if data.size==0:
-        #     data = feature
-        # else:
-        #     data = np.vstack((data,feature))
             
     return feature_list
+
+def noise(data):
+    noise_amp = 0.035*np.random.uniform()*np.amax(data)
+    data = data + noise_amp*np.random.normal(size=data.shape[0])
+    return data
+
+def stretch(data, rate=0.8):
+    return librosa.effects.time_stretch(data, rate)
+
+def shift(data):
+    shift_range = int(np.random.uniform(low=-5, high = 5)*1000)
+    return np.roll(data, shift_range)
+
+def pitch(data, sampling_rate, pitch_factor=0.7):
+    return librosa.effects.pitch_shift(data, sampling_rate, pitch_factor)
 
 def pre_processing(config, label_name,dataset_path, pic_path):
     dir_list = os.listdir(dataset_path)
@@ -173,6 +183,14 @@ def pre_processing(config, label_name,dataset_path, pic_path):
             count += 1
         print("total:{} speeches".format(count))
 
+    elif config.dataset_name == "iemocap":
+        data_df = pd.DataFrame(columns=['song_name', 'emo_labels'])
+        count = 0
+        for song_name in dir_list:
+            emo_labels = song_name.split('-')[0]
+            data_df.loc[count] = [song_name,emo_labels]
+            count += 1
+        print("total:{} speeches".format(count))
     # Dropping the none
     data_df = data_df[data_df.emo_labels != 'none'].reset_index(drop=True)
 
@@ -183,7 +201,7 @@ def pre_processing(config, label_name,dataset_path, pic_path):
 
         X = df_temp["song_name"]
         Y = df_temp["emo_labels"]
-        d_train, emo_test, emo_test_labels = data_split(X, Y)
+        d_train, d_train_label, emo_test, emo_test_labels = data_split(X, Y)
 
         print('Feature Extraction:{}'.format(lname))
         feature = feature_extraction_train(d_train, dataset_path)
@@ -195,21 +213,22 @@ def pre_processing(config, label_name,dataset_path, pic_path):
         emo_test_list.append(emo_test)
         emo_test_labels_list.append(emo_test_labels)
 
-    
-    test = pd.concat( emo_test_list, axis=0, sort=True).reset_index(drop=True)
-    test_label = pd.concat( emo_test_labels_list, axis=0, sort=True).reset_index(drop=True)
+    X_test = pd.concat( emo_test_list, axis=0, sort=True).reset_index(drop=True)
+    y_test = pd.concat( emo_test_labels_list, axis=0, sort=True).reset_index(drop=True)
 
-    with open(pic_path + 'test.pickle', 'wb') as handle:
-        pickle.dump(test, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    with open(pic_path + 'X_test.pickle', 'wb') as handle:
+        pickle.dump(X_test, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    
+    
 
     print('Feature Extraction: test')
-    test_feature_list = feature_extraction_test(test, dataset_path)
+    test_feature_list = feature_extraction_test(X_test, dataset_path)
 
-    with open(pic_path + 'test_feature_list.pickle', 'wb') as handle:
+    with open(pic_path + 'X_test_feature_list.pickle', 'wb') as handle:
         pickle.dump(test_feature_list, handle, protocol=pickle.HIGHEST_PROTOCOL)
     
-    with open(pic_path + 'test_label.pickle', 'wb') as handle:
-        pickle.dump(test_label, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    with open(pic_path + 'y_test.pickle', 'wb') as handle:
+        pickle.dump(y_test, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 if __name__ == "__main__":
     config = opts.parse_opt()
