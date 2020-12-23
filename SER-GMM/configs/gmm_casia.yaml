@@ -6,5 +6,6 @@ class_labels: ["angry", "fear", "happy", "neutral", "sad", "surprise"]
 
 pickle_path: 'Data/train/CASIA/'
 models_path: 'Models/CASIA/'
+res_path: 'Result/casia/'
 
-component_num: 256
+component_num: [5, 7 ,10, 16, 32, 64 , 128, 256, 512]
