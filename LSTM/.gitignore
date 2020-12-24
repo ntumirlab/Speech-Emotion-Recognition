@@ -1,5 +1,5 @@
-features/*
-checkpoints/*
+data/*
+model_state/*
 */__pycache__
 *.pyc
 *.png
