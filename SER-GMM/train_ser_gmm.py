@@ -16,7 +16,7 @@ def train_model(config, features, comp):
 
 def save_model(config, model,name, comp):
     save_dir = os.path.join(os.getcwd(), config.models_path)
-    # Save model and weights
+    # Save model and weightsx
     if not os.path.isdir(save_dir):
         os.makedirs(save_dir)
     filename = name + str(comp) +'.sav'

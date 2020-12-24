@@ -1,0 +1,12 @@
+dataset_name: emodb
+
+fold_path: foldData/emodb
+scale_path: scales/emodb/scale
+o_tra_scale_path: scales/emodb/train.scale
+o_tes_scale_path: scales/emodb/test.scale
+
+res_path: result/res/emodb
+acc_path: result/accuracy/emodb
+
+out_path: outs/emodb/train.scale.out
+png_path: outs/emodb/train.scale.png

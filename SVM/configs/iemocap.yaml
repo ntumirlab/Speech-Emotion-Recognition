@@ -1,0 +1,12 @@
+dataset_name: iemocap
+
+fold_path: foldData/iemocap
+scale_path: scales/iemocap/scale
+o_tra_scale_path: scales/iemocap/train.scale
+o_tes_scale_path: scales/iemocap/test.scale
+
+res_path: result/res/iemocap
+acc_path: result/accuracy/iemocap
+
+out_path: outs/iemocap/train.scale.out
+png_path: outs/iemocap/train.scale.png

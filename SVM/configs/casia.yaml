@@ -1,0 +1,12 @@
+dataset_name: casia
+
+fold_path: foldData/casia
+scale_path: scales/casia/scale
+o_tra_scale_path: scales/casia/train.scale
+o_tes_scale_path: scales/casia/test.scale
+
+res_path: result/res/casia
+acc_path: result/accuracy/casia
+
+out_path: outs/casia/train.scale.out
+png_path: outs/casia/train.scale.png
