@@ -5,4 +5,5 @@ scales/
 result/
 outs/
 util/__pycache__/
+models
 smile.log
