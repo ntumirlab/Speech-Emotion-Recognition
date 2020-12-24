@@ -1,94 +1,125 @@
-import os
 import numpy as np
-from keras.utils import np_utils
-#import models
-import extract_feats.opensmile as of
-import extract_feats.librosa as lf
-import utils.opts as opts
-from sklearn.mixture import GaussianMixture
+from data import Wavset
+from model_2 import LSTM
+from torch.utils.data import DataLoader
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from tqdm import tqdm
+import os
+import logging
 import pickle
+import argparse
+import opts
+import random
+from focalloss import FocalLoss
+DEVICE = 'cuda:1'
+os.environ["CUDA_AVAILABLE_DEVICES"] = '1'
+def save(model, path, epoch, f):
+    torch.save(
+        {
+            'state_dict' : model.state_dict(),
+            'epoch': epoch,
+            'f': f
+        },
+        path
+    )
+def setup_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
-'''
-train(): 训练模型
-
-输入:
-	config(Class)
-
-输出:
-    model: 训练好的模型
-'''
 def train(config):
-    x_train, x_test, y_train, y_test = [], [], [], []
+    logging.info('Loading training data from')
+    train = pickle.load(open('data/opensmile/'+config.dataset+'_train.pkl', 'rb'))
+    train_loader = DataLoader(train, batch_size=1, num_workers=0, shuffle=True, collate_fn=train.collate_fn)
+    logging.info('Loading validate data')
+    valid = pickle.load(open('data/opensmile/'+config.dataset+'_valid.pkl', 'rb'))
+    valid_loader = DataLoader(valid, batch_size=1, num_workers=0, shuffle=False, collate_fn=valid.collate_fn)
+    
 
-    # 加载被 preprocess.py 预处理好的特征
-    if(config.feature_method == 'o'):
-        x_train, x_test, y_train, y_test = of.load_feature(config, config.train_feature_path_opensmile, train = True)
+    train_on_gpu = torch.cuda.is_available()
+    logging.info('Initial model')
+    model = LSTM(76, len(config.class_labels))
 
-    elif(config.feature_method == 'l'):
-        x_train, x_test, y_train, y_test = lf.load_feature(config, config.train_feature_path_librosa, train = True)
-    print(np.array(x_train).shape, np.array(x_test).shape, np.array(y_train).shape, np.array(y_test).shape)
+    if train_on_gpu:
+        model.to(DEVICE)
+    
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0015)
+    loss_function = nn.CrossEntropyLoss()
+    #loss_function = FocalLoss(gamma = 2)
 
+    n_epochs = 30
+    valid_loss_min = np.Inf
+    counter = 0
 
-    gmm = GaussianMixture(n_components = 5, tol = 0.88,n_init=5 ).fit(x_train)
+    TRAIN_LOSS = []
+    VALID_LOSS = []
+    model.train()
+    logging.info('Training')
+    
+    for epoch in range(1, n_epochs+1):
+        
+        train_loss = []
+        progress = tqdm(total=len(train_loader))
+        for d in train_loader:
+            progress.update(1)
+            counter += 1
+            feature, label = [t.to(DEVICE) for t in d]
 
-    labels = gmm.predict(x_train)
-    print(labels)
+            optimizer.zero_grad()
+            train_predict = model(feature)
+                 
+            # calculate the batch loss
+            loss = loss_function(train_predict,label)
+            train_loss.append(loss.item())
+            loss.backward()
+            optimizer.step()
+        
 
+        
+        with torch.no_grad():
+            logging.info('Validating')
+            val_losses = []
+            model.eval()
+            valid_progress = tqdm(total=len(valid_loader))
+            for c in valid_loader:
+                valid_progress.update(1)
+                # move tensors to GPU if CUDA is available
+                valid_feature, valid_label = [t.to(DEVICE) for t in c]
+                val_predict = model(valid_feature)
+                val_loss = loss_function(val_predict,valid_label)
+                val_losses.append(val_loss.item())
 
-    # x_train, x_test (n_samples, n_feats)
-    # y_train, y_test (n_samples)
+            model.train()
+            print("Epoch: {}/{}...".format(epoch, n_epochs),
+                    "Step: {}...".format(counter),
+                    "Loss: {:.6f}...".format(np.mean(train_loss)),
+                    "Val Loss: {:.6f}".format(np.mean(val_losses)))
+            TRAIN_LOSS.append(np.mean(train_loss))
+            VALID_LOSS.append(np.mean(val_losses))
+            if np.mean(val_losses) <= valid_loss_min:
+                print('Validation loss decreased ({:.6f} --> {:.6f}).  Saving model ...'.format(valid_loss_min,np.mean(val_losses)))
+                valid_loss_min = np.mean(val_losses)
+                checkpoint_path = f'model_state/{config.dataset}/hidden/opensmile/ckpt.{epoch}.pt'
+                torch.save(
+                    {
+                        'state_dict' : model.state_dict(),
+                        'epoch': epoch,
+                    },
+                    checkpoint_path
+                )
+    with open(f'model_state/{config.dataset}/hidden/opensmile/train_loss.pkl', 'wb') as f:
+        pickle.dump(TRAIN_LOSS, f)    
+    with open(f'model_state/{config.dataset}/hidden/opensmile/valid_loss.pkl', 'wb') as f:
+        pickle.dump(VALID_LOSS, f)  
+    
 
-    # 搭建模型
-    print(x_train.shape[1])
-    model = models.setup(config = config, n_feats = x_train.shape[1])
-
-    # 训练模型
-    print('----- start training', config.model, '-----')
-    if config.model in ['blstm', 'lstm', 'cnn1d', 'cnn2d']:
-        y_train, y_val = np_utils.to_categorical(y_train), np_utils.to_categorical(y_test) # 独热编码
-        print(np.array(x_train).shape, np.array(x_test).shape, np.array(y_train).shape, np.array(y_test).shape)
-        #models/dnn/dnn.py裡面 因為LSTM繼承DNN_Model
-        model.train(
-            x_train, y_train,
-            batch_size = config.batch_size,
-            n_epochs = config.epochs
-        )
-    else:
-        model.train(x_train, y_train)
-    print('----- end training ', config.model, ' -----')
-
-    # 验证模型 models/common.py裡面 因為dnn_model繼承common_model
-    model.evaluate(x_test, y_test)
-    # 保存训练好的模型
-    model.save_model(config)
-
-
-def train_model(features):
-    gmm = GaussianMixture(n_components = 5, tol = 0.88,n_init=5 ).fit(features)
-    labels = gmm.predict(features)
-    return (gmm,labels)
-
-def save_model(model,name):
-    save_dir = os.path.join(os.getcwd(), '/home/victor/Project/Speech-Emotion-Recognition/LSTM/checkpoints/')
-    # Save model and weights
-    if not os.path.isdir(save_dir):
-        os.makedirs(save_dir)
-    filename = name+'.sav'
-    model_path = os.path.join(save_dir, filename)
-    print(model_path)
-    pickle.dump(model, open(model_path, 'wb'))
-
-def training(p_list):
-    print('Begining of Training & save!')
-    class_labels = ["anger", "boredom", "disgust", "neutral", "fear", "happiness", "sadness"]
-    for i, lname in enumerate(class_labels):
-        m_name = str(lname)+"_model"
-        gmm_model ,train_labels=train_model(p_list[i])
-        save_model(gmm_model, m_name)
-
-    print('finished Training & Save!')
 
 if __name__ == '__main__':
-
     config = opts.parse_opt()
+    setup_seed(666)
     train(config)
