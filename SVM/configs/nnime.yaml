@@ -1,0 +1,12 @@
+dataset_name: nnime
+
+fold_path: foldData/nnime
+scale_path: scales/nnime/scale
+o_tra_scale_path: scales/nnime/train.scale
+o_tes_scale_path: scales/nnime/test.scale
+
+res_path: result/res/nnime
+acc_path: result/accuracy/nnime
+
+out_path: outs/nnime/train.scale.out
+png_path: outs/nnime/train.scale.png

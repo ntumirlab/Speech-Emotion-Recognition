@@ -1,0 +1,9 @@
+.DS_Store
+/LSTM/features/
+/SVM/feature/
+/SVM/foldData/
+/SVM/scales/
+/SVM/result/
+/SVM/outs/
+/SVM/util/__pycache__/
+/SVM/smile.log
