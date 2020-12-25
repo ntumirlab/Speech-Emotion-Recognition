@@ -14,7 +14,7 @@ def extract_features(filepath):
     # Opensmile 配置文件路径
 
     # Opensmile 命令
-    cmd = '~/yuhuei/opensmile/build/progsrc/smilextract/SMILExtract -C ~/yuhuei/opensmile/config/is09-13/IS10_paraling.conf -I ' + filepath + ' -D ' + single_feat_path
+    cmd = '/home/victor/Project/util/opensmile/build/progsrc/smilextract/SMILExtract -C /home/victor/Project/util/opensmile/config/is09-13/IS10_paraling.conf -I ' + filepath + ' -D ' + single_feat_path
     print("Opensmile cmd: ", cmd)
     os.system(cmd)
     reader = csv.reader(open(single_feat_path,'r'))
@@ -38,7 +38,7 @@ def get_data_path(data_path: str, class_labels):
     if config.dataset == 'RAVDESS':
         folder = ['Actor_' + ('%.2d' % i) for i in range(1,25)]    
     elif config.dataset == 'emodb':
-        folder = ['wav']
+        folder = ['emodb']
     elif config.dataset == 'NNIME':
         folder = ['Speech']
     elif config.dataset == 'CASIA':

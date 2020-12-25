@@ -62,8 +62,6 @@ def eval():
             prediction.extend(output)
             reference.extend(target)
         
-            
-
         assert len(prediction) == len(reference)
         acc = sum([x == y for x, y in zip(prediction, reference)]) / len(prediction)
         print(acc)

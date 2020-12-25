@@ -12,7 +12,8 @@ import pickle
 import argparse
 import opts
 import random
-from focalloss import FocalLoss
+from torch.optim import lr_scheduler
+# from focalloss import FocalLoss
 DEVICE = 'cuda:1'
 os.environ["CUDA_AVAILABLE_DEVICES"] = '1'
 def save(model, path, epoch, f):
@@ -48,11 +49,13 @@ def train(config):
     if train_on_gpu:
         model.to(DEVICE)
     
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0015)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
     loss_function = nn.CrossEntropyLoss()
     #loss_function = FocalLoss(gamma = 2)
+    # clipping_value = 1 # arbitrary value of your choosing
+    # torch.nn.utils.clip_grad_norm(model.parameters(), clipping_value)
 
-    n_epochs = 30
+    n_epochs = 100
     valid_loss_min = np.Inf
     counter = 0
 
@@ -77,9 +80,9 @@ def train(config):
             loss = loss_function(train_predict,label)
             train_loss.append(loss.item())
             loss.backward()
-            optimizer.step()
-        
 
+            # nn.utils.clip_grad_norm_(model.parameters(), max_norm=20, norm_type=2)
+            optimizer.step()
         
         with torch.no_grad():
             logging.info('Validating')
