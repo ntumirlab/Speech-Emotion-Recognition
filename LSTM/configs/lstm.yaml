@@ -12,3 +12,4 @@ data_path: /mnt/E/dataset # 数据集路径
 #### emodb ####
 class_labels: ['angry', 'sad', 'happy', 'disgust', 'neutral', 'fear', 'boredom']
 
+
