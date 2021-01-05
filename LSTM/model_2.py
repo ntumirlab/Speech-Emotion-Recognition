@@ -10,20 +10,20 @@ class LSTM(nn.Module):
     def __init__(self, input_size, num_class):
         super(LSTM, self).__init__()
         self.input_size = input_size
-        # self.lstm = nn.LSTM(
-        #     input_size  = input_size,
-        #     hidden_size = 512, #128
-        #     num_layers =  1,
-        #     batch_first = True,
-        #     bidirectional  = False,
-        # )
-        self.gru = nn.GRU(
+        self.lstm = nn.LSTM(
             input_size  = input_size,
             hidden_size = 512, #128
             num_layers =  1,
             batch_first = True,
-            bidirectional  = False
+            bidirectional  = False,
         )
+        # self.gru = nn.GRU(
+        #     input_size  = input_size,
+        #     hidden_size = 512, #128
+        #     num_layers =  1,
+        #     batch_first = True,
+        #     bidirectional  = False
+        # )
         self.dropout = nn.Dropout(p=0.1) 
         self.fc = nn.Linear(512, num_class)
 
