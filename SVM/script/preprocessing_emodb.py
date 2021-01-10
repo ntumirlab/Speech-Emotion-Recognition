@@ -9,7 +9,27 @@ sortFile = []
 
 svmPath = "feature/svm/EmoDB"
 fivefoldPath = "foldData/emodb/5fold"
+tenfoldPath = "foldData/emodb/10fold"
 files = [f for f in listdir(svmPath)]
+
+# 10-fold
+for speaker in speakers:
+    trainTxt = ""
+    testTxt = ""
+    for f in files:
+        if f[-3:] != "txt":
+            continue
+        with open(svmPath + "/" + f, 'r') as fin:
+            lines = fin.readlines()
+        for line in lines:
+            if speaker == f[:2]:
+                testTxt += (line)
+            else:
+                trainTxt += (line)
+    with open(tenfoldPath + "/test" + speaker + ".txt", 'w') as fout:
+        fout.write(testTxt)
+    with open(tenfoldPath + "/train" + speaker + ".txt", 'w') as fout:
+        fout.write(trainTxt)
 
 # 5-fold
 fileCnt = 0

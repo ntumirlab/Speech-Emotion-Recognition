@@ -1,16 +1,36 @@
 import sys
 from os import listdir
 import math
-
+speakers = [""]
 emotions = ["ang", "hap", "neu", "sad"]
 emoFile = [[], [], [], []]
 sortFile = []
 
 svmPath = "feature/svm/iemocap"
-# tenfoldPath = "foldData/iemocap/10fold"
+tenfoldPath = "foldData/iemocap/10fold"
 fivefoldPath = "foldData/iemocap/5fold"
 files = [f for f in listdir(svmPath)]
 # print(files)
+
+# 10-fold
+for speaker in speakers:
+    trainTxt = ""
+    testTxt = ""
+    for f in files:
+        if f[-3:] != "txt":
+            continue
+        with open(svmPath + "/" + f, 'r') as fin:
+            lines = fin.readlines()
+        for line in lines:
+            if speaker == f.split('-')[2][:-8]:
+                testTxt += (line)
+            else:
+                trainTxt += (line)
+                
+    with open(tenfoldPath + "/test" + speaker + ".txt", 'w') as fout:
+        fout.write(testTxt)
+    with open(tenfoldPath + "/train" + speaker + ".txt", 'w') as fout:
+        fout.write(trainTxt)
 
 # 5-fold
 fileCnt = 0

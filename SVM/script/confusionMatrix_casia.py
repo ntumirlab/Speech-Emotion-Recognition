@@ -9,7 +9,8 @@ import seaborn as sns
 emotionDict = {ord('g') - ord('a'): 0, ord('a') - ord('a'): 1, ord('p') - ord('a'): 2,  ord('u') - ord('a'): 3, ord('d') - ord('a'): 4, ord('r') - ord('a'): 5}
 emotions = ["anger", "fear", "happy", "neutral", "sad", "surprise"]
 
-oriPath = ["foldData/casia/5fold"]
+# oriPath = ["foldData/casia/5fold"]
+oriPath = ["foldData/casia/10fold", "foldData/casia/5fold"]
 
 def unwegiht_accuracy(confusion_matrix):
     diagonal_sum = confusion_matrix.trace()

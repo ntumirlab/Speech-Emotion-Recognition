@@ -87,8 +87,8 @@ def draw(confusion_m, f, labels, path):
     plt.savefig(path + 'res ' + str(f[:-4]) +'.png')
 
 print('start create confusionMatrix..')
-oriPath = ["foldData/emodb/5fold"]
-# oriPath = ["foldData/emodb/10fold", "foldData/emodb/5fold"]
+#oriPath = ["foldData/emodb/5fold"]
+oriPath = ["foldData/emodb/10fold", "foldData/emodb/5fold"]
 for path in oriPath:
     for f in listdir(path):
         testLabel = []

@@ -512,10 +512,10 @@ svm_options : additional options for svm-train""")
 			cmd = 'bash script/train_output.sh '+ dataset_name + ' '+ str(best_param['c']) + ' '+ str(best_param['g']) + ' '+ foldT +' ' + num
 			print(cmd)
 			os.system(cmd)
-		elif dataset_name=="nnime":
-			cmd = 'bash script/train_output.sh '+ dataset_name + ' '+ str(best_param['c']) + ' '+ str(best_param['g']) + ' '+ foldT +' ' + num
-			print(cmd)
-			os.system(cmd)
+		# elif dataset_name=="nnime":
+    	# 		cmd = 'bash script/train_output.sh '+ dataset_name + ' '+ str(best_param['c']) + ' '+ str(best_param['g']) + ' '+ foldT +' ' + num
+		# 	print(cmd)
+		# 	os.system(cmd)
 		elif dataset_name=="iemocap":
 			cmd = 'bash script/train_output.sh '+ dataset_name + ' '+ str(best_param['c']) + ' '+ str(best_param['g']) + ' '+ foldT +' ' + num
 			print(cmd)

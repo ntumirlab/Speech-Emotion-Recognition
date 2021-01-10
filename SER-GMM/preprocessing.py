@@ -216,8 +216,6 @@ def pre_processing(config, label_name,dataset_path, pic_path):
     with open(pic_path + 'X_test.pickle', 'wb') as handle:
         pickle.dump(X_test, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-
-
     print('Feature Extraction: test')
     test_feature_list = feature_extraction_test(X_test, dataset_path)
 
