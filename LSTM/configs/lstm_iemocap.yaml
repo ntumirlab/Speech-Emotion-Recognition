@@ -1,0 +1,23 @@
+
+# 数据集
+# dataset: emodb
+# data_path: /mnt/E/dataset/emodb # 数据集路径
+
+# dataset: casia
+# data_path: /mnt/E/dataset/CASIA # 数据集路径
+
+dataset: iemocap
+data_path: /mnt/E/dataset/IEMOCAP_full_release # 数据集路径
+ 
+## CASIA ###
+# class_labels: ["angry", "fear", "happy", "neutral", "sad", "surprise"]
+## iemocap ###
+class_labels: ['ang', 'sad', 'neu', 'hap']
+### NNIME ###
+# class_labels: ["angry", "frustration", "happy", "neutral", "sad", "surprise"]  # 情感标签
+### RAVDESS ###
+# class_labels: ["angry", "sad", "neutral", "disgust", "happy", "fear", "surprise", "calm"]
+### emodb ####
+# class_labels: ['angry', 'sad', 'happy', 'disgust', 'neutral', 'fear', 'boredom']
+
+
