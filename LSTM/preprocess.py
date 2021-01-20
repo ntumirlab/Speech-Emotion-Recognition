@@ -24,7 +24,6 @@ if __name__ == "__main__":
         X.append(item[0])
         y.append(item[1])
     
-    
     X = np.array(X)
     y = np.array(y)
     print(X.shape, y.shape)
@@ -35,7 +34,6 @@ if __name__ == "__main__":
     train, valid, train_label, valid_label = train_test_split(X_train, y_train, test_size=0.1, stratify=y_train)
     print(train.shape, valid.shape, test.shape, train_label.shape, valid_label.shape, test_label.shape)
     print(np.unique(train_label, return_counts=True),np.unique(valid_label, return_counts=True),np.unique(test_label, return_counts=True))
-    
     
     print("loading training data")
     with open('data/opensmile/'+config.dataset+'_train.pkl', 'wb') as f:

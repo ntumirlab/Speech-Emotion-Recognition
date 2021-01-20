@@ -28,6 +28,3 @@ class LSTM(nn.Module):
         # predict = batch * num_class
         predict = self.fc(output)
         return predict
-        
-        
-

@@ -10,14 +10,21 @@ import random
 import itertools
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
+
 def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
+    config = opts.parse_opt()
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
         print("Normalized confusion matrix")
     else:
         print('Confusion matrix, without normalization')
+    
+        # acc
+    u_acc = unwegiht_accuracy(cm)
+    w_acc = wegiht_accuracy(cm)
 
     print(cm)
+    plt.figure(figsize=(12, 12))
     plt.imshow(cm, interpolation='nearest', cmap=cmap)
     plt.title(title)
     plt.colorbar()
@@ -30,10 +37,11 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
         plt.text(j, i, format(cm[i, j], fmt), horizontalalignment="center", color="white" if cm[i, j] > thresh else "black")
 
+    
     plt.tight_layout()
     plt.ylabel('True label')
-    plt.xlabel('Predicted label')
-    plt.savefig('./model_state/emodb/cmt.png')
+    plt.xlabel('Predicted Labels \n Unweight Accuracy:{}% \n Weight Accuracy:{}%'.format(round(u_acc*100, 2), round(w_acc*100, 2)), size=14)
+    plt.savefig('./model_state/'+config.dataset+'/cmt.png')
     plt.show()
 
 def setup_seed(seed):
@@ -53,7 +61,7 @@ def eval():
     eval_loader = DataLoader(eval_data, batch_size=1,num_workers=0, shuffle=False, collate_fn=eval_data.collate_fn)
 
     
-    ckpt = torch.load('model_state/'+config.dataset+'/hidden/opensmile/ckpt.17.pt',map_location=DEVICE)
+    ckpt = torch.load('model_state/'+config.dataset+'/hidden/opensmile/best.pt',map_location=DEVICE)
     model.load_state_dict(ckpt['state_dict'])
     #model.cuda()
     model.eval()
@@ -75,15 +83,24 @@ def eval():
         prediction.extend(output)
         reference.extend(target)
     
-        
-
     assert len(prediction) == len(reference)
-
     cm = confusion_matrix(torch.Tensor(reference),torch.Tensor(prediction))
-
 
     plot_confusion_matrix(cm,config.class_labels,normalize = True)
 
+def unwegiht_accuracy(confusion_matrix):
+    diagonal_sum = confusion_matrix.trace()
+    sum_of_all_elements = confusion_matrix.sum()
+    return diagonal_sum / sum_of_all_elements
+
+def wegiht_accuracy(confusion_matrix):
+    w_acc = 0
+    for i, num in enumerate(confusion_matrix):
+        acc = confusion_matrix[i][i]
+        row_sum = confusion_matrix[i].sum()
+        lab_acc = acc / row_sum
+        w_acc += lab_acc
+    return w_acc / len(confusion_matrix)
 
 if __name__ == '__main__':
     setup_seed(666)

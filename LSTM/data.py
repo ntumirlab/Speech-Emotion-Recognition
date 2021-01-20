@@ -6,7 +6,6 @@ from torch.utils.data import DataLoader
 import re
 import pickle
 
-
 class Wavset(Dataset):
     def __init__(self, mode, feature, label):
         self.mode = mode
@@ -20,14 +19,12 @@ class Wavset(Dataset):
             feature, label= self.raw_data['feature'][idx], self.raw_data['label'][idx]
             return (torch.from_numpy(feature), torch.LongTensor([label]))
 
-
     def __len__(self):
         return len(self.raw_data['feature'])
 
 
     def collate_fn(self, samples):
         return samples[0][0].float(), samples[0][1]
-
 
 def load(mode, feature, label):
     return Wavset(mode, feature, label)

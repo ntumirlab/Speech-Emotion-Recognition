@@ -19,5 +19,12 @@ class_labels: ['ang', 'sad', 'neu', 'hap']
 # class_labels: ["angry", "sad", "neutral", "disgust", "happy", "fear", "surprise", "calm"]
 ### emodb ####
 # class_labels: ['angry', 'sad', 'happy', 'disgust', 'neutral', 'fear', 'boredom']
+bi_lstm:
+  input_size: 76
+  hidden_size: 180
+  num_layers: 2
 
+train:
+  gpuid: 1
+  batch_size: 1
 

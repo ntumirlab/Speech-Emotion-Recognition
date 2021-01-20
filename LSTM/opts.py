@@ -12,7 +12,6 @@ class Config:
             else:
                 self.__dict__[k] = v
 
-
 '''
 从 YAML 文件中加载配置
 

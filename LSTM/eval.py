@@ -39,12 +39,10 @@ def eval():
         if not filename.endswith('pt'):
                 continue
         
-    
         ckpt = torch.load(filename,map_location=DEVICE)
         model.load_state_dict(ckpt['state_dict'])
         #model.cuda()
         model.eval()
-
         m = nn.Softmax(dim=1)
         
         prediction = []
@@ -62,8 +60,6 @@ def eval():
             prediction.extend(output)
             reference.extend(target)
         
-            
-
         assert len(prediction) == len(reference)
         acc = sum([x == y for x, y in zip(prediction, reference)]) / len(prediction)
         print(acc)
@@ -72,9 +68,6 @@ def eval():
             best = acc
             best_model = filename
     print('Best model : {}, Best acc : {}'.format(best_model,best))        
-
-    
-
 
 if __name__ == '__main__':
     setup_seed(666)

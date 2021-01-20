@@ -4,3 +4,4 @@ model_state/*
 *.pyc
 *.png
 /tmp/
+smile.log

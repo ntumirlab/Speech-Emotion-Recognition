@@ -12,4 +12,14 @@ data_path: /mnt/E/dataset/emodb # 数据集路径
 ### emodb ####
 class_labels: ['angry', 'sad', 'happy', 'disgust', 'neutral', 'fear', 'boredom']
 
+bi_lstm:
+  input_size: 76
+  hidden_size: 256
+  num_layers: 5
+
+train:
+  gpuid: 1
+  batch_size: 2
+  epoch_num: 50
+
 

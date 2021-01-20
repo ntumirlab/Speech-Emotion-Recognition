@@ -12,9 +12,10 @@ import pickle
 import argparse
 import opts
 import random
-from focalloss import FocalLoss
-DEVICE = 'cuda:1'
-os.environ["CUDA_AVAILABLE_DEVICES"] = '1'
+# from focalloss import FocalLoss
+config = opts.parse_opt()
+DEVICE = 'cuda:'+str(config.train.gpuid)
+os.environ["CUDA_AVAILABLE_DEVICES"] = str(config.train.gpuid)
 def save(model, path, epoch, f):
     torch.save(
         {
@@ -33,17 +34,17 @@ def setup_seed(seed):
     torch.backends.cudnn.benchmark = False
 
 def train(config):
+    config = opts.parse_opt()
     logging.info('Loading training data from')
     train = pickle.load(open('data/opensmile/'+config.dataset+'_train.pkl', 'rb'))
-    train_loader = DataLoader(train, batch_size=1, num_workers=0, shuffle=True, collate_fn=train.collate_fn)
+    train_loader = DataLoader(train, batch_size=config.train.batch_size, num_workers=0, shuffle=True, collate_fn=train.collate_fn)
     logging.info('Loading validate data')
     valid = pickle.load(open('data/opensmile/'+config.dataset+'_valid.pkl', 'rb'))
-    valid_loader = DataLoader(valid, batch_size=1, num_workers=0, shuffle=False, collate_fn=valid.collate_fn)
+    valid_loader = DataLoader(valid, batch_size=config.train.batch_size, num_workers=0, shuffle=False, collate_fn=valid.collate_fn)
     
-
     train_on_gpu = torch.cuda.is_available()
     logging.info('Initial model')
-    model = LSTM(76, len(config.class_labels))
+    model = LSTM(config.bi_lstm.input_size, len(config.class_labels))
 
     if train_on_gpu:
         model.to(DEVICE)
@@ -52,7 +53,7 @@ def train(config):
     loss_function = nn.CrossEntropyLoss()
     #loss_function = FocalLoss(gamma = 2)
 
-    n_epochs = 30
+    n_epochs = config.train.epoch_num
     valid_loss_min = np.Inf
     counter = 0
 
@@ -79,8 +80,6 @@ def train(config):
             loss.backward()
             optimizer.step()
         
-
-        
         with torch.no_grad():
             logging.info('Validating')
             val_losses = []
@@ -104,7 +103,7 @@ def train(config):
             if np.mean(val_losses) <= valid_loss_min:
                 print('Validation loss decreased ({:.6f} --> {:.6f}).  Saving model ...'.format(valid_loss_min,np.mean(val_losses)))
                 valid_loss_min = np.mean(val_losses)
-                checkpoint_path = f'model_state/{config.dataset}/hidden/opensmile/ckpt.{epoch}.pt'
+                checkpoint_path = f'model_state/{config.dataset}/hidden/opensmile/best.pt'
                 torch.save(
                     {
                         'state_dict' : model.state_dict(),
@@ -117,8 +116,6 @@ def train(config):
     with open(f'model_state/{config.dataset}/hidden/opensmile/valid_loss.pkl', 'wb') as f:
         pickle.dump(VALID_LOSS, f)  
     
-
-
 if __name__ == '__main__':
     config = opts.parse_opt()
     setup_seed(666)

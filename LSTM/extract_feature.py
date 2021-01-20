@@ -28,7 +28,6 @@ def extract_features(file, pad = False):
     S, phase = librosa.magphase(stft)
     rmse = librosa.feature.rmse(S=S).T
     
-
     # pitch each frame
     # (d, t), d is the subset of FFT bins within fmin and fmax 
     #  default : fmin=150.0, fmax=4000.0
@@ -38,7 +37,6 @@ def extract_features(file, pad = False):
         index = magnitudes[:, t].argmax()
         pitch.append(pitches[index, t])
     pitch = np.array(pitch).T.reshape(-1,1)
-
     
     return np.hstack((mfccs, mfcc_delta, mfcc_delta2, rmse, pitch)) # t * 41
     '''
@@ -55,13 +53,7 @@ def extract_features(file, pad = False):
     chroma = np.mean(librosa.feature.chroma_stft(S = stft, sr = sample_rate).T, axis = 0)
     # 梅尔频率
     mel = np.mean(librosa.feature.melspectrogram(X, sr = sample_rate).T, axis = 0)
-    
-    
     '''
-    
-
-
-
 
 def get_data_path(data_path: str, class_labels):
     config = opts.parse_opt()

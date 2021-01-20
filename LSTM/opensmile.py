@@ -14,7 +14,7 @@ def extract_features(filepath):
     # Opensmile 配置文件路径
 
     # Opensmile 命令
-    cmd = '~/yuhuei/opensmile/build/progsrc/smilextract/SMILExtract -C ~/yuhuei/opensmile/config/is09-13/IS10_paraling.conf -I ' + filepath + ' -D ' + single_feat_path
+    cmd = '/home/victor/Project/util/opensmile/build/progsrc/smilextract/SMILExtract -C /home/victor/Project/util/opensmile/config/is09-13/IS10_paraling.conf -I ' + filepath + ' -D ' + single_feat_path
     print("Opensmile cmd: ", cmd)
     os.system(cmd)
     reader = csv.reader(open(single_feat_path,'r'))
@@ -22,10 +22,6 @@ def extract_features(filepath):
     feature = [i[0].split(";")[2:] for i in rows[1:]]
     feature = [[float(j) for j in i] for i in feature]
     return np.array(feature)
-    
-
-
-
 
 def get_data_path(data_path: str, class_labels):
     config = opts.parse_opt()
@@ -41,8 +37,11 @@ def get_data_path(data_path: str, class_labels):
         folder = ['wav']
     elif config.dataset == 'NNIME':
         folder = ['Speech']
-    elif config.dataset == 'CASIA':
-        folder = class_labels
+    elif config.dataset == 'casia':
+        # folder = class_labels
+        folder = ['full']
+    elif config.dataset == 'iemocap':
+        folder = ['selected_wav']
     for _, directory in enumerate(folder):
         os.chdir(directory)
         # 读取该文件夹下的音频
@@ -78,8 +77,10 @@ def get_data(config, data_path: str, train: bool):
                 _class = ravdess_label[file_label]
             elif config.dataset == 'NNIME':
                 _class = file.split('/')[-1].split('_')[0]    
-            elif config.dataset == 'CASIA':
+            elif config.dataset == 'casia':
                 _class = re.findall(".*-(.*)-.*", file)[0]
+            elif config.dataset == 'iemocap':
+                _class = file.split('/')[-1].split('-')[0] 
         
             data.append([extract_features(file), config.class_labels.index(_class)])
     else:
